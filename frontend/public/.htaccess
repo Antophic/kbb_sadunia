@@ -1,0 +1,97 @@
+# ============================================
+# KBB Sadunia - Production .htaccess (Hostinger/Apache Hardened)
+# Untuk public_html/ (frontend + backend tergabung)
+# ============================================
+
+# === PROTECT SENSITIVE FILES ===
+<FilesMatch "^\.env|\.log$|schema\.sql$|\.sql$|\.bak$|\.old$|\.orig$|\.gitkeep$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+<FilesMatch "^\.">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# === BROWSER CACHING & COMPRESSION ===
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/avif "access plus 1 year"
+    ExpiresByType application/pdf "access plus 1 month"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain text/html text/xml text/css application/xml application/xhtml+xml application/rss+xml application/javascript application/x-javascript application/json
+</IfModule>
+
+# === SECURITY HEADERS ===
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    Header always unset X-Powered-By
+    <FilesMatch "\.(js|css|woff2|jpg|jpeg|png|webp|avif|gif|svg)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>
+
+# === REWRITE RULES ===
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Blokir folder internal jika tanpa sengaja ikut terupload.
+    RewriteRule ^(config|database|scripts|logs|vendor)/.*$ - [F,L]
+
+    # Hanya api/index.php yang boleh dieksekusi dari folder API.
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^api/(?!index\.php$).+\.php$ - [F,L]
+
+    # API requests.
+    RewriteRule ^api/?$ api/index.php [QSA,L]
+    RewriteRule ^api/(.*)$ api/index.php [QSA,L]
+
+    # SEO endpoints dinamis, mengikuti domain aktif setelah migrasi hosting.
+    RewriteRule ^robots\.txt$ api/index.php [QSA,L]
+    RewriteRule ^sitemap\.xml$ api/index.php [QSA,L]
+    RewriteRule ^rss\.xml$ api/index.php [QSA,L]
+
+    # Root page juga lewat SSR proxy agar canonical/OG mengikuti domain aktif.
+    RewriteRule ^$ ssr_proxy.php [QSA,L]
+
+    # Uploads.
+    RewriteRule ^uploads/ - [L]
+
+    # File/folder asli dibuka langsung.
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # SPA fallback + OG metadata proxy.
+    RewriteRule ^ ssr_proxy.php [QSA,L]
+</IfModule>
+
+Options -Indexes

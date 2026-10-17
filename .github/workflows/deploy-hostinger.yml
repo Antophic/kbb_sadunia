@@ -1,0 +1,64 @@
+name: Deploy to Hostinger
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hostinger-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Verify frontend
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build
+
+      - name: Assemble public_html update
+        shell: bash
+        run: |
+          mkdir -p release/public_html/api release/public_html/config
+          cp -a frontend/dist/. release/public_html/
+          cp backend/api/index.php release/public_html/api/index.php
+          cp backend/api/books.php release/public_html/api/books.php
+          cp -a backend/config/. release/public_html/config/
+          cp backend/.htaccess release/public_html/.htaccess
+          cp backend/.user.ini release/public_html/.user.ini
+
+      - name: Deploy through FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.HOSTINGER_FTP_SERVER }}
+          username: ${{ secrets.HOSTINGER_FTP_USERNAME }}
+          password: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./release/public_html/
+          server-dir: ${{ secrets.HOSTINGER_FTP_PATH }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.env
+            **/uploads/**
+

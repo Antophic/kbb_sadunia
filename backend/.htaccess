@@ -1,0 +1,93 @@
+# ============================================
+# KBB Sadunia — Production .htaccess (Hardened)
+# Untuk public_html/ (frontend + backend tergabung)
+# ============================================
+
+# === PROTECT SENSITIVE FILES ===
+# Blokir akses langsung ke file sensitif
+<FilesMatch "^\.env|\.log$|schema\.sql$|\.sql$|\.bak$|\.old$|\.orig$|\.gitkeep$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+</FilesMatch>
+
+# Blokir akses ke file tersembunyi (dot files)
+<FilesMatch "^\.">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+</FilesMatch>
+
+# Izinkan .htaccess dibaca oleh Apache (override perlindungan dot files)
+<Files ".htaccess">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+</Files>
+
+# === BROWSER CACHING & COMPRESSION (PERFORMANCE) ===
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain text/html text/xml text/css application/xml application/xhtml+xml application/rss+xml application/javascript application/x-javascript application/json
+</IfModule>
+
+# === SECURITY HEADERS ===
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    # Hapus header yang membocorkan info server
+    Header always unset X-Powered-By
+    Header unset Server
+</IfModule>
+
+# === REWRITE RULES ===
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # === BLOKIR AKSES KE FOLDER SENSITIF ===
+    # Kembalikan 403 Forbidden untuk semua request ke folder internal
+    RewriteRule ^(config|database|scripts|logs|vendor)/.*$ - [F,L]
+
+    # === BLOKIR FILE BERBAHAYA DI API ===
+    # Hanya index.php yang boleh diakses di folder api/
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^api/(?!index\.php$).+\.php$ - [F,L]
+
+    # API requests — teruskan langsung ke api/
+    RewriteRule ^api/?$ api/index.php [QSA,L]
+    RewriteRule ^api/(.*)$ api/index.php [QSA,L]
+
+    # Uploads — teruskan langsung ke folder uploads
+    RewriteRule ^uploads/ - [L]
+
+    # Jika file/folder asli ada di server, buka langsung
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # SPA Fallback — arahkan rute lain ke ssr_proxy.php agar OG Tags bisa di-inject
+    RewriteRule ^ ssr_proxy.php [QSA,L]
+</IfModule>
+
+# === DISABLE DIRECTORY LISTING ===
+Options -Indexes
+
+# Catatan: Pengaturan limit upload (upload_max_filesize, post_max_size) dipindahkan ke .user.ini
+# untuk mencegah Error 500 di server FastCGI (seperti cPanel modern).
