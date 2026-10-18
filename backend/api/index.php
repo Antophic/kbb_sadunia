@@ -103,6 +103,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/Logger.php';
 
+// Temporary one-time data migration for the final InfinityFree image batch.
+// Remove this block after the production database reports all paths below.
+function applyInfinityReferenceImageMigration20261018() {
+    $images = [
+        100 => '/article_images/infinity-reference-20261018/article_100.webp',
+        129 => '/article_images/infinity-reference-20261018/article_129.webp',
+        132 => '/article_images/infinity-reference-20261018/article_132.webp',
+        133 => '/article_images/infinity-reference-20261018/article_133.webp',
+        134 => '/article_images/infinity-reference-20261018/article_134.webp',
+        135 => '/article_images/infinity-reference-20261018/article_135.webp',
+        136 => '/article_images/infinity-reference-20261018/article_136.webp',
+        137 => '/article_images/infinity-reference-20261018/article_137.webp',
+        138 => '/article_images/infinity-reference-20261018/article_138.webp',
+        139 => '/article_images/infinity-reference-20261018/article_139.webp',
+        140 => '/article_images/infinity-reference-20261018/article_140.webp',
+        141 => '/article_images/infinity-reference-20261018/article_141.webp',
+    ];
+
+    try {
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare('UPDATE articles SET image_url = :image_url WHERE id = :id AND (image_url IS NULL OR image_url <> :image_url_check)');
+        $updated = 0;
+        foreach ($images as $id => $imageUrl) {
+            $stmt->execute([
+                ':image_url' => $imageUrl,
+                ':id' => $id,
+                ':image_url_check' => $imageUrl,
+            ]);
+            $updated += $stmt->rowCount();
+        }
+        header('X-Infinity-Image-Migration: ' . ($updated > 0 ? 'applied' : 'current'));
+    } catch (Throwable $error) {
+        error_log('[IMAGE_MIGRATION] ' . $error->getMessage());
+        header('X-Infinity-Image-Migration: failed');
+    }
+}
+
+applyInfinityReferenceImageMigration20261018();
+
 // ============================================
 // Security & Performance Helpers
 // ============================================

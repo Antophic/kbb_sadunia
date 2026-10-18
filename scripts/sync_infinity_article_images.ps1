@@ -18,11 +18,10 @@ function ConvertFrom-HexString {
     return $bytes
 }
 
-function Get-InfinityChallengeCookie {
-    param([Parameter(Mandatory)][string]$BaseUrl)
+function Get-InfinityCookieFromChallenge {
+    param([Parameter(Mandatory)][string]$ChallengeHtml)
 
-    $challenge = (Invoke-WebRequest -Uri "$BaseUrl/" -UseBasicParsing -TimeoutSec 30).Content
-    $matches = [regex]::Matches($challenge, 'toNumbers\("([0-9a-f]{32})"\)')
+    $matches = [regex]::Matches($ChallengeHtml, 'toNumbers\("([0-9a-f]{32})"\)')
     if ($matches.Count -lt 3) {
         throw 'InfinityFree challenge values were not found.'
     }
@@ -46,34 +45,62 @@ function Get-InfinityChallengeCookie {
     return ([BitConverter]::ToString($plainText)).Replace('-', '').ToLowerInvariant()
 }
 
+function Get-InfinityChallengeCookie {
+    param([Parameter(Mandatory)][string]$BaseUrl)
+
+    $challenge = (Invoke-WebRequest -Uri "$BaseUrl/" -UseBasicParsing -TimeoutSec 30).Content
+    return Get-InfinityCookieFromChallenge -ChallengeHtml $challenge
+}
+
 function Get-ReferenceBytes {
     param(
         [Parameter(Mandatory)][string]$Url,
         [Parameter(Mandatory)][string]$CookieValue
     )
 
-    $request = [System.Net.HttpWebRequest]::Create($Url)
-    $request.CookieContainer = New-Object System.Net.CookieContainer
-    $request.CookieContainer.Add((New-Object System.Net.Cookie('__test', $CookieValue, '/', 'kbb-banjarsadunia.site.je')))
-    $response = $request.GetResponse()
-    try {
-        $stream = $response.GetResponseStream()
-        $memory = New-Object System.IO.MemoryStream
+    $currentCookie = $CookieValue
+    $requestUrl = $Url
+
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        $request = [System.Net.HttpWebRequest]::Create($requestUrl)
+        $request.CookieContainer = New-Object System.Net.CookieContainer
+        $request.CookieContainer.Add((New-Object System.Net.Cookie('__test', $currentCookie, '/', 'kbb-banjarsadunia.site.je')))
+        $response = $request.GetResponse()
         try {
-            $stream.CopyTo($memory)
-            return [pscustomobject]@{
-                Bytes = $memory.ToArray()
-                ContentType = $response.ContentType
+            $contentType = $response.ContentType
+            $stream = $response.GetResponseStream()
+            $memory = New-Object System.IO.MemoryStream
+            try {
+                $stream.CopyTo($memory)
+                $bytes = $memory.ToArray()
+            }
+            finally {
+                $memory.Dispose()
+                $stream.Dispose()
             }
         }
         finally {
-            $memory.Dispose()
-            $stream.Dispose()
+            $response.Dispose()
         }
+
+        if ($contentType -like 'image/*') {
+            return [pscustomobject]@{
+                Bytes = $bytes
+                ContentType = $contentType
+            }
+        }
+
+        if ($contentType -notlike 'text/html*') {
+            throw "Unexpected reference content type: $contentType"
+        }
+
+        $challengeHtml = [System.Text.Encoding]::UTF8.GetString($bytes)
+        $currentCookie = Get-InfinityCookieFromChallenge -ChallengeHtml $challengeHtml
+        $separator = if ($Url.Contains('?')) { '&' } else { '?' }
+        $requestUrl = $Url + $separator + 'i=' + $attempt
     }
-    finally {
-        $response.Dispose()
-    }
+
+    throw "Reference image challenge did not resolve after 3 attempts: $Url"
 }
 
 $cookieValue = Get-InfinityChallengeCookie -BaseUrl $ReferenceBaseUrl
@@ -156,8 +183,8 @@ $duplicateGroups = $manifest | Group-Object sha256 | Where-Object Count -gt 1
 if ($duplicateGroups.Count -gt 0) {
     throw "Reference download contains $($duplicateGroups.Count) duplicate image groups."
 }
-if ($manifest.Count -ne 70) {
-    throw "Expected 70 valid reference images but downloaded $($manifest.Count)."
+if ($manifest.Count -ne 82 -or $skipped.Count -ne 0) {
+    throw "Expected 82 valid reference images but downloaded $($manifest.Count) and skipped $($skipped.Count)."
 }
 
 $manifestDocument = [ordered]@{

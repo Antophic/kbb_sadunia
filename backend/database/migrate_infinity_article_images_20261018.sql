@@ -45,6 +45,7 @@ SET image_url = CASE id
     WHEN 97 THEN '/article_images/infinity-reference-20261018/article_97.jpg'
     WHEN 98 THEN '/article_images/infinity-reference-20261018/article_98.jpg'
     WHEN 99 THEN '/article_images/infinity-reference-20261018/article_99.jpg'
+    WHEN 100 THEN '/article_images/infinity-reference-20261018/article_100.webp'
     WHEN 101 THEN '/article_images/infinity-reference-20261018/article_101.jpg'
     WHEN 102 THEN '/article_images/infinity-reference-20261018/article_102.jpg'
     WHEN 103 THEN '/article_images/infinity-reference-20261018/article_103.jpg'
@@ -73,11 +74,22 @@ SET image_url = CASE id
     WHEN 126 THEN '/article_images/infinity-reference-20261018/article_126.jpg'
     WHEN 127 THEN '/article_images/infinity-reference-20261018/article_127.jpg'
     WHEN 128 THEN '/article_images/infinity-reference-20261018/article_128.jpg'
+    WHEN 129 THEN '/article_images/infinity-reference-20261018/article_129.webp'
     WHEN 130 THEN '/article_images/infinity-reference-20261018/article_130.jpg'
+    WHEN 132 THEN '/article_images/infinity-reference-20261018/article_132.webp'
+    WHEN 133 THEN '/article_images/infinity-reference-20261018/article_133.webp'
+    WHEN 134 THEN '/article_images/infinity-reference-20261018/article_134.webp'
+    WHEN 135 THEN '/article_images/infinity-reference-20261018/article_135.webp'
+    WHEN 136 THEN '/article_images/infinity-reference-20261018/article_136.webp'
+    WHEN 137 THEN '/article_images/infinity-reference-20261018/article_137.webp'
+    WHEN 138 THEN '/article_images/infinity-reference-20261018/article_138.webp'
+    WHEN 139 THEN '/article_images/infinity-reference-20261018/article_139.webp'
+    WHEN 140 THEN '/article_images/infinity-reference-20261018/article_140.webp'
+    WHEN 141 THEN '/article_images/infinity-reference-20261018/article_141.webp'
     ELSE image_url
 END
 WHERE id IN (
-59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 130
+59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141
 );
 
 COMMIT;
@@ -85,6 +97,6 @@ COMMIT;
 SELECT id, title, image_url
 FROM articles
 WHERE id IN (
-59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 130
+59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141
 )
 ORDER BY id;

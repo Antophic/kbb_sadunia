@@ -1,8 +1,8 @@
 ﻿{
     "reference_base_url":  "https://kbb-banjarsadunia.site.je",
-    "generated_at":  "2026-10-18T16:09:22.1227750+07:00",
-    "downloaded_count":  70,
-    "skipped_count":  12,
+    "generated_at":  "2026-10-18T16:43:24.3429908+07:00",
+    "downloaded_count":  82,
+    "skipped_count":  0,
     "images":  [
                    {
                        "production_id":  59,
@@ -415,6 +415,16 @@
                        "sha256":  "d82102e1681b0d991b9bae028e9f9d3dd86d39be820f33cf640d586bcd1792f1"
                    },
                    {
+                       "production_id":  100,
+                       "reference_id":  100,
+                       "title":  "Pengurus Pusat KBB Sadunia Gelar Pertemuan Persiapan Pra Kongres Bersama Seluruh DPW SeIndonesia",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/107_thumbnail-pra-kongres-dpw-seindonesia.webp",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_100.webp",
+                       "content_type":  "image/webp",
+                       "bytes":  40854,
+                       "sha256":  "d152008e8f64a8ea2bb03b067bb3b9a499891c45a4814085435dac45c8c4027d"
+                   },
+                   {
                        "production_id":  101,
                        "reference_id":  101,
                        "title":  "Ribuan Warga Banjar Serbu Surabaya, Halal Bihalal KBB Jatim Pecah Rekor!",
@@ -695,6 +705,16 @@
                        "sha256":  "d6bd88b203d8a60601d3cefa903d141e52d43bdca32a0a3fe51cf8f0574836fc"
                    },
                    {
+                       "production_id":  129,
+                       "reference_id":  129,
+                       "title":  "Ulama Banjar Dari Masa Ke Masa",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/105_thumbnail-ulama-banjar-dari-masa-ke-masa.webp",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_129.webp",
+                       "content_type":  "image/webp",
+                       "bytes":  42514,
+                       "sha256":  "1e418f48dc360956cc8278f0e77bc3901c39048d538ad7d793a76a27936433ec"
+                   },
+                   {
                        "production_id":  130,
                        "reference_id":  130,
                        "title":  "Rapat Pengurus Pusat KBB Bahas Persiapan Pra Kongres KBB Sadunia 2026",
@@ -703,92 +723,109 @@
                        "content_type":  "image/jpeg",
                        "bytes":  188703,
                        "sha256":  "b02b77a8bbd149b3ac2336a0a15ac5c95c710bc9760809277bd5d7c9321fc9cb"
+                   },
+                   {
+                       "production_id":  132,
+                       "reference_id":  132,
+                       "title":  "Epilog: Transmigrasi, Pertanian, Relasi Etnis, dan Jalan Panjang Kedaulatan Pangan",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/106_thumbnail-epilog-transmigrasi-pertanian-kedaulatan-pangan.webp",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_132.webp",
+                       "content_type":  "image/webp",
+                       "bytes":  46600,
+                       "sha256":  "881c4bdf2d24945dd001442cb44d63b4b2a4521b03058d8441fa316862b079f1"
+                   },
+                   {
+                       "production_id":  133,
+                       "reference_id":  133,
+                       "title":  "PP KBB Sadunia Silaturahmi dengan Kadis Pendidikan dan Kabid Kebudayaan Pemprov Bahas Pra Kongres 2026",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/068_silaturahmi-pp-kbb-kadis-pendidikan-kabid-kebudayaan-pemprov-pra-kongres-2026.webp",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_133.webp",
+                       "content_type":  "image/webp",
+                       "bytes":  107700,
+                       "sha256":  "f50ce20757e11b2ed15d17e503d0b68b22d1b3e0a8a5669c7ca0c3b25f919c07"
+                   },
+                   {
+                       "production_id":  134,
+                       "reference_id":  134,
+                       "title":  "PP KBB Sadunia Bahas Rencana Tempat Pra Kongres 2026 di Bogor",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/069_prakongres-bogor-rencana-tempat-ketum-koorwil-jawa-sumatera-pw-jabar.webp",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_134.webp",
+                       "content_type":  "image/webp",
+                       "bytes":  81608,
+                       "sha256":  "873801dbd1a894cc4d3f03d9b6270a5770082ef2241a179867a69cb745a902df"
+                   },
+                   {
+                       "production_id":  135,
+                       "reference_id":  135,
+                       "title":  "KBB Sadunia Dukung Putra-Putri Banua Kuliah ke Luar Negeri",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/070_kbb-taiwan-putra-putri-banua-jembatan-pendidikan.webp",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_135.webp",
+                       "content_type":  "image/webp",
+                       "bytes":  152412,
+                       "sha256":  "49b4ac0d7125ae69a2ca73ed41e2613fc8ffc69fe6638c000967973a7bede02e"
+                   },
+                   {
+                       "production_id":  136,
+                       "reference_id":  136,
+                       "title":  "PW KBB Kepri Gelar Maulid Nabi, Perkuat Silaturahmi Masyarakat Banjar di Kepri",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/071_berita-maulid-nabi-pw-kbb-kepri-clickindonesia.webp",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_136.webp",
+                       "content_type":  "image/webp",
+                       "bytes":  95144,
+                       "sha256":  "3935d5562102eb4f789f99facfa52ff19a9feb3c12aeb5ab69910014c5241486"
+                   },
+                   {
+                       "production_id":  137,
+                       "reference_id":  137,
+                       "title":  "Kehadiran Paman Birin Hangatkan Suasana Upacara HUT ke-81 RI",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/072_berita-paman-birin-upacara-hut-ri-81-kalimantanpost.webp",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_137.webp",
+                       "content_type":  "image/webp",
+                       "bytes":  93196,
+                       "sha256":  "1fb890ef5824515dd7575adcce64380e46577e8f82c373dbc10bf38cde28e3cc"
+                   },
+                   {
+                       "production_id":  138,
+                       "reference_id":  138,
+                       "title":  "Galeri Ucapan KBB Sadunia: Harjad Kalsel, HUT RI, dan Maulid Nabi",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/073_ucapan-harjad-kalsel-pp-kbb-sadunia.webp",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_138.webp",
+                       "content_type":  "image/webp",
+                       "bytes":  283002,
+                       "sha256":  "74161997f83be0b9dfb1b7399061dbc0c5b987398bfc15e6f94b356c68f400c4"
+                   },
+                   {
+                       "production_id":  139,
+                       "reference_id":  139,
+                       "title":  "KBB Sumatera Utara Sampaikan Duka Cita atas Wafatnya Drs. H. Rudy Ariffin",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/101_ucapan-duka-cita-rudy-ariffin-pw-kbb-sumatera-utara.webp",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_139.webp",
+                       "content_type":  "image/webp",
+                       "bytes":  84400,
+                       "sha256":  "d6a2f5d70abf321b4bec86d598c48610da5ab96e608441950d80c2ac21d04882"
+                   },
+                   {
+                       "production_id":  140,
+                       "reference_id":  140,
+                       "title":  "Paman Birin Hadiri Pemakaman H. Rudy Ariffin",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/091_duka-cita-rudy-ariffin-suasana-takziah-1.webp",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_140.webp",
+                       "content_type":  "image/webp",
+                       "bytes":  209298,
+                       "sha256":  "76d285c53b49bee851a9a9b21f1d0ee1adee78559a5e909776e1320751afb4a7"
+                   },
+                   {
+                       "production_id":  141,
+                       "reference_id":  142,
+                       "title":  "Kamus Ringkas Bahasa Banjar: Cerdas Lestarikan Bahasa Aslimu!",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/108_kamus-ringkas-bahasa-banjar-cerdas-lestarikan-bahasa-aslimu.webp",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_141.webp",
+                       "content_type":  "image/webp",
+                       "bytes":  54076,
+                       "sha256":  "2e387dae859a901c066d424377008e8e98e3287cc8bf2a211e1a8582d89cda10"
                    }
                ],
     "skipped":  [
-                    {
-                        "production_id":  100,
-                        "reference_id":  100,
-                        "title":  "Pengurus Pusat KBB Sadunia Gelar Pertemuan Persiapan Pra Kongres Bersama Seluruh DPW SeIndonesia",
-                        "source_path":  "/uploads/107_thumbnail-pra-kongres-dpw-seindonesia.webp",
-                        "content_type":  "text/html"
-                    },
-                    {
-                        "production_id":  129,
-                        "reference_id":  129,
-                        "title":  "Ulama Banjar Dari Masa Ke Masa",
-                        "source_path":  "/uploads/105_thumbnail-ulama-banjar-dari-masa-ke-masa.webp",
-                        "content_type":  "text/html"
-                    },
-                    {
-                        "production_id":  132,
-                        "reference_id":  132,
-                        "title":  "Epilog: Transmigrasi, Pertanian, Relasi Etnis, dan Jalan Panjang Kedaulatan Pangan",
-                        "source_path":  "/uploads/106_thumbnail-epilog-transmigrasi-pertanian-kedaulatan-pangan.webp",
-                        "content_type":  "text/html"
-                    },
-                    {
-                        "production_id":  133,
-                        "reference_id":  133,
-                        "title":  "PP KBB Sadunia Silaturahmi dengan Kadis Pendidikan dan Kabid Kebudayaan Pemprov Bahas Pra Kongres 2026",
-                        "source_path":  "/uploads/068_silaturahmi-pp-kbb-kadis-pendidikan-kabid-kebudayaan-pemprov-pra-kongres-2026.webp",
-                        "content_type":  "text/html"
-                    },
-                    {
-                        "production_id":  134,
-                        "reference_id":  134,
-                        "title":  "PP KBB Sadunia Bahas Rencana Tempat Pra Kongres 2026 di Bogor",
-                        "source_path":  "/uploads/069_prakongres-bogor-rencana-tempat-ketum-koorwil-jawa-sumatera-pw-jabar.webp",
-                        "content_type":  "text/html"
-                    },
-                    {
-                        "production_id":  135,
-                        "reference_id":  135,
-                        "title":  "KBB Sadunia Dukung Putra-Putri Banua Kuliah ke Luar Negeri",
-                        "source_path":  "/uploads/070_kbb-taiwan-putra-putri-banua-jembatan-pendidikan.webp",
-                        "content_type":  "text/html"
-                    },
-                    {
-                        "production_id":  136,
-                        "reference_id":  136,
-                        "title":  "PW KBB Kepri Gelar Maulid Nabi, Perkuat Silaturahmi Masyarakat Banjar di Kepri",
-                        "source_path":  "/uploads/071_berita-maulid-nabi-pw-kbb-kepri-clickindonesia.webp",
-                        "content_type":  "text/html"
-                    },
-                    {
-                        "production_id":  137,
-                        "reference_id":  137,
-                        "title":  "Kehadiran Paman Birin Hangatkan Suasana Upacara HUT ke-81 RI",
-                        "source_path":  "/uploads/072_berita-paman-birin-upacara-hut-ri-81-kalimantanpost.webp",
-                        "content_type":  "text/html"
-                    },
-                    {
-                        "production_id":  138,
-                        "reference_id":  138,
-                        "title":  "Galeri Ucapan KBB Sadunia: Harjad Kalsel, HUT RI, dan Maulid Nabi",
-                        "source_path":  "/uploads/073_ucapan-harjad-kalsel-pp-kbb-sadunia.webp",
-                        "content_type":  "text/html"
-                    },
-                    {
-                        "production_id":  139,
-                        "reference_id":  139,
-                        "title":  "KBB Sumatera Utara Sampaikan Duka Cita atas Wafatnya Drs. H. Rudy Ariffin",
-                        "source_path":  "/uploads/101_ucapan-duka-cita-rudy-ariffin-pw-kbb-sumatera-utara.webp",
-                        "content_type":  "text/html"
-                    },
-                    {
-                        "production_id":  140,
-                        "reference_id":  140,
-                        "title":  "Paman Birin Hadiri Pemakaman H. Rudy Ariffin",
-                        "source_path":  "/uploads/091_duka-cita-rudy-ariffin-suasana-takziah-1.webp",
-                        "content_type":  "text/html"
-                    },
-                    {
-                        "production_id":  141,
-                        "reference_id":  142,
-                        "title":  "Kamus Ringkas Bahasa Banjar: Cerdas Lestarikan Bahasa Aslimu!",
-                        "source_path":  "/uploads/108_kamus-ringkas-bahasa-banjar-cerdas-lestarikan-bahasa-aslimu.webp",
-                        "content_type":  "text/html"
-                    }
+
                 ]
 }
