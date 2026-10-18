@@ -1,0 +1,794 @@
+﻿{
+    "reference_base_url":  "https://kbb-banjarsadunia.site.je",
+    "generated_at":  "2026-10-18T16:09:22.1227750+07:00",
+    "downloaded_count":  70,
+    "skipped_count":  12,
+    "images":  [
+                   {
+                       "production_id":  59,
+                       "reference_id":  59,
+                       "title":  "Halalbihalal Warga Banjar di Jabodetabek, Ada Tamu dari Brunei Darussalam hingga Malaysia",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_fix_59_halalbihalal-jabodetabek.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_59.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  195917,
+                       "sha256":  "609ae898f97e0d0a372e59b4784275efacbb5723d859c1e9b1ba403779b8c513"
+                   },
+                   {
+                       "production_id":  60,
+                       "reference_id":  60,
+                       "title":  "Kerukunan Bubuhan Banjar Gelar Halal Bihalal, Suasana Kraton Majapahit Jakarta Meriah Gembira",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_fix_60_halalbihalal-kraton-majapahit.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_60.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  270564,
+                       "sha256":  "834016d621890501d19e6e8760fa028eb390fadef930f574679eec67813e94ef"
+                   },
+                   {
+                       "production_id":  61,
+                       "reference_id":  61,
+                       "title":  "Pererat Silaturahmi, KBB Bandung Raya Gelar Halal Bihalal",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_03_pererat-silaturahmi-kbb-bandung-raya-gelar-halal-bihalal.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_61.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  195460,
+                       "sha256":  "250cfaf8aade3e0ed1ea61d01f238659469f3ce511980568a7c5334194cdc843"
+                   },
+                   {
+                       "production_id":  62,
+                       "reference_id":  62,
+                       "title":  "Wakili Ketua Umum PP KBB, Irianto Lambrie Hadiri Halalbihalal Warga Banjar se-Bandung Raya",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_fix_62_halalbihalal-bandung-raya.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_62.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  188976,
+                       "sha256":  "c080d14b99c839f2a163730f4d605fa75e8e2a319b147b10c779e9ccb73181f3"
+                   },
+                   {
+                       "production_id":  63,
+                       "reference_id":  63,
+                       "title":  "Dari Soto Banjar Hingga Bingka dan Buras, Begini Makna Persaudaraan Banjar di Semarang",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_05_dari-soto-banjar-hingga-bingka-dan-buras-begini-makna-pers.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_63.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  597104,
+                       "sha256":  "989ad1e34a0b8dc21d3435954470799883d188cd853893ce2b854574edbe8b64"
+                   },
+                   {
+                       "production_id":  64,
+                       "reference_id":  64,
+                       "title":  "Bingka dan Soto Banjar Meriahkan Halal Bihalal Bubuhan Banjar di Semarang",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_06_bingka-dan-soto-banjar-meriahkan-halal-bihalal-bubuhan-ban.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_64.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  1266584,
+                       "sha256":  "ddd802080fd81205a76464f9f0802c39422c7c5a6bd8091d82e05173191beecd"
+                   },
+                   {
+                       "production_id":  65,
+                       "reference_id":  65,
+                       "title":  "Festival Wadai Banjar di Malaysia, Perantau Perkuat Jaringan dan Warisan Leluhur",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_07_festival-wadai-banjar-di-malaysia-perantau-perkuat-jaringa.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_65.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  177401,
+                       "sha256":  "62aeec18e5d8a2d20d1f46b7f04fa12c391f63e33d581cc39af6c2ec35d044ea"
+                   },
+                   {
+                       "production_id":  66,
+                       "reference_id":  66,
+                       "title":  "Obat Rindu Perantau, Festival Wadai dan Budaya Banjar di Malaysia",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_08_obat-rindu-perantau-festival-wadai-dan-budaya-banjar-di-ma.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_66.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  116387,
+                       "sha256":  "4fbfa704e201608550e37e3cee6543a70fbc6b03b8d9114342c8a890bf361415"
+                   },
+                   {
+                       "production_id":  67,
+                       "reference_id":  67,
+                       "title":  "Sambut Kongres Akbar, KBB Mandat Dr. Yakob KM Ismail Pimpin Kepanitiaan Pra-Kongres Sa-Dunia di Bogor",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_01_sambut-kongres-akbar-kbb-mandat-dr-yakob-km-ismail-pimpin-kepanitiaan-pr.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_67.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  264191,
+                       "sha256":  "9e5ed6a0efe8be3d69ac6e30990c5be63781cd0dd7d535453bd1a34981774210"
+                   },
+                   {
+                       "production_id":  68,
+                       "reference_id":  68,
+                       "title":  "Paman Birin Sambut Lawatan Silaturahmi Pertubuhan Banjar Malaysia ke Tanah Leluhur di Banjarmasin",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_29_paman-birin-sambut-lawatan-silaturahmi-pertubuhan-banjar-malaysia-ke-tan.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_68.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  154610,
+                       "sha256":  "668228fc81958080709449f2d095b3a120be5ccd13bde51d38762409acc0fd25"
+                   },
+                   {
+                       "production_id":  69,
+                       "reference_id":  69,
+                       "title":  "Sambut Kunjungan Wisatawan asal Malaysia, Bupati Tabalong Berharap Dapat Menarik Minat Investor",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_11_sambut-kunjungan-wisatawan-asal-malaysia-bupati-tabalong-b.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_69.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  243752,
+                       "sha256":  "d0aa01b87d4d786359325f09dddb9522133bda391936f38102b110e546859580"
+                   },
+                   {
+                       "production_id":  70,
+                       "reference_id":  70,
+                       "title":  "PW KBB Kalteng Koordinasi Dengan PP KBB Sadunia",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_12_pw-kbb-kalteng-koordinasi-dengan-pp-kbb-sadunia.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_70.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  69743,
+                       "sha256":  "c911505f77a404fc0c41c925b15d12968967e9e6a5e3e10dc0a1f507071ac85f"
+                   },
+                   {
+                       "production_id":  71,
+                       "reference_id":  71,
+                       "title":  "Hadiri Kongres Bubuhan Banjar Malaysia, Irianto Paparkan Peluang Bisnis di Bidang Energi Terbarukan",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_13_hadiri-kongres-bubuhan-banjar-malaysia-irianto-paparkan-pe.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_71.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  1580309,
+                       "sha256":  "22e656f837e46e087ad63b97ea4b2d493fbe744cc91a782bb062120425b8bf54"
+                   },
+                   {
+                       "production_id":  72,
+                       "reference_id":  72,
+                       "title":  "PW KBB Kalimantan Tengah Periode 2025-2029 Resmi Dilantik, Siap Perkuat Peran Diaspora Banjar",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_fix_72_pelantikan-pw-kbb-kalteng-2025-2029.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_72.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  243413,
+                       "sha256":  "ff30597a50d98b1267cb28d3571b661b63b3c01a22faba89a19185380c436e23"
+                   },
+                   {
+                       "production_id":  73,
+                       "reference_id":  73,
+                       "title":  "PP KBB Pererat Silaturahmi Urang Banjar di Kalteng",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_15_pp-kbb-pererat-silaturahmi-urang-banjar-di-kalteng.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_73.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  192068,
+                       "sha256":  "217834f05482a835b31f837085de621b45cb4dec849f9c2ed2d0b115671e9491"
+                   },
+                   {
+                       "production_id":  74,
+                       "reference_id":  74,
+                       "title":  "Ribuan Warga Banjar Padati Halal Bihalal KBB di Kraton Majapahit",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_16_ribuan-warga-banjar-padati-halal-bihalal-kbb-di-kraton-maj.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_74.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  64566,
+                       "sha256":  "6e4a8fdb33b77e8d16119e71b9242d147590d72e5830f5603df70293aa1dc178"
+                   },
+                   {
+                       "production_id":  75,
+                       "reference_id":  75,
+                       "title":  "Kerukunan Bubuhan Banjar Salurkan 186 Paket Sembako kepada Korban Banjir dan Tanah Longsor",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_17_kerukunan-bubuhan-banjar-salurkan-186-paket-sembako-kepada.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_75.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  54190,
+                       "sha256":  "e969c89b434ac8e8d79456b58265e6192e1c65c81af44d6feb6d44c00ad2d18c"
+                   },
+                   {
+                       "production_id":  76,
+                       "reference_id":  76,
+                       "title":  "PP KBB Sadunia Melakukan Pengurusan Keberadaan Organisasi pada Badan Kesbangpol Prov Kalsel",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_18_pp-kbb-sadunia-melakukan-pengurusan-keberadaan-organisasi.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_76.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  139096,
+                       "sha256":  "3c0e363b5c8ad1deea849fcabf8e641cd9c398220ae783e040aee4952395a188"
+                   },
+                   {
+                       "production_id":  77,
+                       "reference_id":  77,
+                       "title":  "Diaspora Bangsa Banjar: Marwah Kesultanan, Kemelayuan dan Dampak Sosial di Tanah Rantau",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_19_diaspora-bangsa-banjar-marwah-kesultanan-kemelayuan-dan-da.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_77.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  132154,
+                       "sha256":  "1d8b6d367ea9ecbe1b5bf4366ecbcf57f125316801f27df90312d4dfbec18ada"
+                   },
+                   {
+                       "production_id":  78,
+                       "reference_id":  78,
+                       "title":  "Migrasi Orang Banjar di Kalimantan: Catatan Kecil Pola Migrasi Antar Kawasan",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_20_migrasi-orang-banjar-di-kalimantan-catatan-kecil-pola-migr.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_78.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  177980,
+                       "sha256":  "d6d4fba282a0ca2c208873a4c60ce5bd97444942b4aacbc6bc30bac530924a87"
+                   },
+                   {
+                       "production_id":  79,
+                       "reference_id":  79,
+                       "title":  "Mesyuarat Agung Ke-22 Pertubuhan Banjar Malaysia",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_21_mesyuarat-agung-ke-22-pertubuhan-banjar-malaysia.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_79.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  57644,
+                       "sha256":  "2799cc6d9b22dab9bae349b23ab746d422942deaab9adbbb40a4f8a9d6cdf4cd"
+                   },
+                   {
+                       "production_id":  80,
+                       "reference_id":  80,
+                       "title":  "Pengurus Kerukunan Bubuhan Banjar Kepri Resmi Dilantik",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_kbb_search_01_pengurus-kerukunan-bubuhan-banjar-kepri-resmi-dilantik.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_80.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  44050,
+                       "sha256":  "11e46af7fb3bec1ad0bb39429ba8435378a6f7ad9365013cf408533b7a3548ba"
+                   },
+                   {
+                       "production_id":  81,
+                       "reference_id":  81,
+                       "title":  "Mahdalena Promosikan Kain Sasirangan ke Malaysia dan Singapura",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_kbb_search_02_mahdalena-promosikan-kain-sasirangan-ke-malaysia-dan-singapura.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_81.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  141357,
+                       "sha256":  "2f2d8689158dafcc4f5bb503c1e5cefcbc2248948601f0a8c271a6100dcdd0bd"
+                   },
+                   {
+                       "production_id":  82,
+                       "reference_id":  82,
+                       "title":  "KBB Pusat Telah Lantik 14 KBB Provinsi di Indonesia",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_kbb_search_03_kbb-pusat-telah-lantik-14-kbb-provinsi-di-indonesia.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_82.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  223358,
+                       "sha256":  "8a00c0e14f2c44c134ba82daa7ef0b3f5249aa0ff320882bb42ff75459f66b5e"
+                   },
+                   {
+                       "production_id":  83,
+                       "reference_id":  83,
+                       "title":  "KBB Siapkan Lahan Kuburan bagi Bubuhan Banjar di Jabodetabek",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_kbb_search_04_kbb-siapkan-lahan-kuburan-bagi-bubuhan-banjar-di-jabodetabek.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_83.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  162152,
+                       "sha256":  "c4dc24ecec503c0f4cdd045d68622e4f6fc216d59ecff0373a95300ced894ec8"
+                   },
+                   {
+                       "production_id":  84,
+                       "reference_id":  84,
+                       "title":  "Raker Pertama Kerukunan Bubuhan Banjar Sa-Dunia",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_kbb_search_05_raker-pertama-kerukunan-bubuhan-banjar-sa-dunia.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_84.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  150253,
+                       "sha256":  "610f6d2963d14bb01fed3cd70e1170d01b07fb3e926d4553969b48c37b03e5b8"
+                   },
+                   {
+                       "production_id":  85,
+                       "reference_id":  85,
+                       "title":  "PW KBB Kaltim Potensial Bangun Jaringan Usahawan dan Ekonomi Banjar",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_kbb_search_06_pw-kbb-kaltim-potensial-bangun-jaringan-usahawan-dan-ekonomi-banjar.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_85.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  129776,
+                       "sha256":  "52cee17ea9bfb0e379221be2d139435d50151b72adac90346decfd855bf5cbc8"
+                   },
+                   {
+                       "production_id":  86,
+                       "reference_id":  86,
+                       "title":  "Muhammad Ary Achdyani Nilai Perlunya Jaringan Usahawan Orang Banjar",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_kbb_search_07_muhammad-ary-achdyani-nilai-perlunya-jaringan-usahawan-orang-banjar.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_86.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  185335,
+                       "sha256":  "2c72c3abc7e96ad75eaa47e0cb40dc4e116adeb7d51d706b4a7ffadb42b34436"
+                   },
+                   {
+                       "production_id":  87,
+                       "reference_id":  87,
+                       "title":  "Presiden KBB Sa-Dunia Disambut Meriah Warga Banjar di Palu",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_kbb_search_08_presiden-kbb-sadunia-disambut-meriah-warga-banjar-di-palu.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_87.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  65950,
+                       "sha256":  "70ad512e4a0de35912e2dcf55343f76572373488bbcb3b675c331e3a0a7e751f"
+                   },
+                   {
+                       "production_id":  88,
+                       "reference_id":  88,
+                       "title":  "Kerukunan Bubuhan Banjar Provinsi Bali Dikukuhkan",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_kbb_search_09_kerukunan-bubuhan-banjar-provinsi-bali-dikukuhkan.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_88.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  117761,
+                       "sha256":  "bdfc4a78b6fdcd3f43eefc37355604344fdbf3b6ba0f716a938584990807d4f3"
+                   },
+                   {
+                       "production_id":  89,
+                       "reference_id":  89,
+                       "title":  "Ketua KBB Sadunia Lantik Pengurus Wilayah KBB Riau",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_kbb_search_10_ketua-kbb-sadunia-lantik-pengurus-wilayah-kbb-riau.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_89.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  64194,
+                       "sha256":  "b0078c1d5dbc6b9b255e51df6a0440ef233d7501fab371fef0b575d645b5763b"
+                   },
+                   {
+                       "production_id":  90,
+                       "reference_id":  90,
+                       "title":  "Gubernur Kalsel: KBB Penting Bantu Peningkatan Kesejahteraan Masyarakat Banjar",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_kbb_search_11_gubernur-kalsel-kbb-penting-bantu-peningkatan-kesejahteraan-masyarakat.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_90.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  138651,
+                       "sha256":  "bd311ae54798eb42fef502ab958c5b8c3aaa08b068aedffe9e48ac32ab5181e4"
+                   },
+                   {
+                       "production_id":  91,
+                       "reference_id":  91,
+                       "title":  "KBB Sedunia 2022-2026 Dikukuhkan",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_kbb_search_12_kbb-sedunia-2022-2026-dikukuhkan.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_91.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  230363,
+                       "sha256":  "e7b4af811a5137b9a148e9873ddb4d0ea3d7ee0a9189b2e79cc9ecbca4104d90"
+                   },
+                   {
+                       "production_id":  92,
+                       "reference_id":  92,
+                       "title":  "Paman Birin Dikukuhkan sebagai Ketua KBB Sadunia",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_kbb_search_13_paman-birin-dikukuhkan-sebagai-ketua-kbb-sadunia.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_92.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  119027,
+                       "sha256":  "2e8a5e3c22bac109fd05b6477b9c538effdb8bfda1e65f60501461c9ec207a58"
+                   },
+                   {
+                       "production_id":  93,
+                       "reference_id":  93,
+                       "title":  "Paman Birin Kukuhkan PW KBB Sumut, KBB Usung Tagline “Bergerak Banjar Menjemput Dunia”",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_02_paman-birin-kukuhkan-pw-kbb-sumut-kbb-usung-tagline-bergerak-banjar-menj.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_93.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  179937,
+                       "sha256":  "e502fdfba4d2ec04ef6b983584587252aef8669eb4f5c279b28b36f9a4ee183b"
+                   },
+                   {
+                       "production_id":  94,
+                       "reference_id":  94,
+                       "title":  "Muswil KBB Kepri ke-3 Sukses Digelar, Suhadi Terpilih sebagai Ketua Umum Periode 2025-2029",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_03_muswil-kbb-kepri-ke-3-sukses-digelar-suhadi-terpilih-sebagai-ketua-umum-.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_94.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  109376,
+                       "sha256":  "898fffd938b43c5b65d7c07a2fe2b246bef68d7fe4b3488376ffc9fa79315f81"
+                   },
+                   {
+                       "production_id":  95,
+                       "reference_id":  95,
+                       "title":  "Pertemuan Bubuhan Banjar Perantauan di Bangka Belitung, Jadi Momen Merajut “Bubuhan Banua” se-Dunia",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_04_pertemuan-bubuhan-banjar-perantauan-di-bangka-belitung-jadi-momen-meraju.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_95.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  239993,
+                       "sha256":  "709d95327200621aa357148408eba9116a9173f793475a94e6038f4ddb6517f1"
+                   },
+                   {
+                       "production_id":  96,
+                       "reference_id":  96,
+                       "title":  "Masa Kepengurusan Di perpanjang, PW KBB Kepri Siap Gelar Muswil ke-3 pada Juni 2025",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_05_masa-kepengurusan-di-perpanjang-pw-kbb-kepri-siap-gelar-muswil-ke-3-pada.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_96.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  188793,
+                       "sha256":  "17f12c52953d647db61dbaf8ee1b8bf1061fa312f06e5e1c97d147e1be92596c"
+                   },
+                   {
+                       "production_id":  97,
+                       "reference_id":  97,
+                       "title":  "Pertemuan Warga Banjar di Perantauan, Yayasan Wantilan Siap Gelar Festival Budaya Banjar Bertaraf Internasional di Bandung 2025",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_06_pertemuan-warga-banjar-di-perantauan-yayasan-wantilan-siap-gelar-festiva.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_97.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  251409,
+                       "sha256":  "3ceed0b106d18b852af77da49ab06bff94e035f80985097365f36bf4daeb84c5"
+                   },
+                   {
+                       "production_id":  98,
+                       "reference_id":  98,
+                       "title":  "Walikota Banjarmasin Jalin Keakraban Bersama Perantau Banjar di Surabaya",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_07_walikota-banjarmasin-jalin-keakraban-bersama-perantau-banjar-di-surabaya.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_98.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  303547,
+                       "sha256":  "f5e5163e9cf5407ddd1e2293f8e97267144c2d6ba8f29ce78541cd627d8225c0"
+                   },
+                   {
+                       "production_id":  99,
+                       "reference_id":  99,
+                       "title":  "Meriah dan Penuh Kehangatan, Halal Bihalal Kerukunan Bubuhan Banjar di Aceh",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_08_meriah-dan-penuh-kehangatan-halal-bihalal-kerukunan-bubuhan-banjar-di-ac.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_99.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  278855,
+                       "sha256":  "d82102e1681b0d991b9bae028e9f9d3dd86d39be820f33cf640d586bcd1792f1"
+                   },
+                   {
+                       "production_id":  101,
+                       "reference_id":  101,
+                       "title":  "Ribuan Warga Banjar Serbu Surabaya, Halal Bihalal KBB Jatim Pecah Rekor!",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_10_ribuan-warga-banjar-serbu-surabaya-halal-bihalal-kbb-jatim-pecah-rekor.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_101.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  167847,
+                       "sha256":  "190c1fcd799c75568f6d36a14d80a8b4a339f8e9b83e5193fff10a5dea96e8ea"
+                   },
+                   {
+                       "production_id":  102,
+                       "reference_id":  102,
+                       "title":  "Ratusan Warga Banua Padati Halalbihalal KBB Sadunia Jawa Barat di Balai Sartika, Bogor",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_12_ratusan-warga-banua-padati-halalbihalal-kbb-sadunia-jawa-barat-di-balai-.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_102.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  197630,
+                       "sha256":  "f1711004fc7e2305d0bbb3fef479b256a080182ab112dd77676fe09ee4e15707"
+                   },
+                   {
+                       "production_id":  103,
+                       "reference_id":  103,
+                       "title":  "Hujan Deras Tak Surutkan Semangat, Bubuhan Banjar Meriahkan Halal Bihalal di Kota Blitar",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_13_hujan-deras-tak-surutkan-semangat-bubuhan-banjar-meriahkan-halal-bihalal.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_103.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  201095,
+                       "sha256":  "170c13bef2c622e5d4ecec5aa0b6bee3127e88527398216ba32deff251dafe79"
+                   },
+                   {
+                       "production_id":  104,
+                       "reference_id":  104,
+                       "title":  "Meriah! Halalbihalal Kerukunan Bubuhan Banjar (KBB) Sadunia di Jawa Timur Satukan Ribuan Warga Banua",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_14_meriah-halalbihalal-kerukunan-bubuhan-banjar-kbb-sadunia-di-jawa-timur-s.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_104.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  282307,
+                       "sha256":  "010e47a73f1c0ec2e198626fe4f4b5e2d5666aedf477d5bac5130753f9299766"
+                   },
+                   {
+                       "production_id":  105,
+                       "reference_id":  105,
+                       "title":  "Pertemuan Virtual Pengurus Pusat Kerukunan Bubuhan Banjar Sedunia Bahas Persiapan Pra-Kongres",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_15_pertemuan-virtual-pengurus-pusat-kerukunan-bubuhan-banjar-sedunia-bahas-.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_105.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  196108,
+                       "sha256":  "c3a85fbb97dd11326efe5c6504013851b837a90955f1de06e1b249c42bc89c55"
+                   },
+                   {
+                       "production_id":  106,
+                       "reference_id":  106,
+                       "title":  "Sekjen Pengurus Pusat Kerukunan Bubuhan Banjar Se-Dunia Bersilaturahmi di Kediaman Ketua Dewan Penasehat.",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_16_sekjen-pengurus-pusat-kerukunan-bubuhan-banjar-se-dunia-bersilaturahmi-d.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_106.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  139987,
+                       "sha256":  "b6a6e963b10372d8e858ba5855bc466849af7705f57f3f15935c18c7456662bb"
+                   },
+                   {
+                       "production_id":  107,
+                       "reference_id":  107,
+                       "title":  "Silaturahmi dan Pengajian Kerukunan Bubuhan Banjar Jabodetabek: Membangun Keakraban dan Keimanan",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_17_silaturahmi-dan-pengajian-kerukunan-bubuhan-banjar-jabodetabek-membangun.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_107.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  230828,
+                       "sha256":  "26cc924dc1bac5b48d3b49a8dff97d5fbdb80b7bf8c0e4eaed10af8eb66ed0d4"
+                   },
+                   {
+                       "production_id":  108,
+                       "reference_id":  108,
+                       "title":  "Konsolidasi Strategis PP KBB Sadunia di Kabupaten/Kota Kalsel",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_18_konsolidasi-strategis-pp-kbb-sadunia-di-kabupaten-kota-kalsel.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_108.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  200169,
+                       "sha256":  "ec2ef46001a1784673fb09ec7dace38c6e2fc6886e563863ff0564006147c6bd"
+                   },
+                   {
+                       "production_id":  109,
+                       "reference_id":  109,
+                       "title":  "Kebersamaan dan Semangat Baru di Gathering PW KBB Jawa Timur",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_19_kebersamaan-dan-semangat-baru-di-gathering-pw-kbb-jawa-timur.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_109.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  297552,
+                       "sha256":  "bc75db3a5dab7beced5d662a91f2466571df443d9612048312e7e1ee16dd25fd"
+                   },
+                   {
+                       "production_id":  110,
+                       "reference_id":  110,
+                       "title":  "Rapat Koordinasi Pengurus Pusat KBB Persiapan Launching Aplikasi KBB",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_20_rapat-koordinasi-pengurus-pusat-kbb-persiapan-launching-aplikasi-kbb.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_110.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  208487,
+                       "sha256":  "d674dca60154bb2907b856f1e1b42e57090832658780f75dd55183807d01cbf7"
+                   },
+                   {
+                       "production_id":  111,
+                       "reference_id":  111,
+                       "title":  "Pelantikan PD KBB Kota Palu, Pjs. Wali Kota Ajak KBB Perkuat Kerukunan dan Sinergi",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_21_pelantikan-pd-kbb-kota-palu-pjs-wali-kota-ajak-kbb-perkuat-kerukunan-dan.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_111.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  90148,
+                       "sha256":  "b6f3e6d0d70e735eecd548ad85d173f5b82927e7b33c7a60b614d08a95a7e49f"
+                   },
+                   {
+                       "production_id":  112,
+                       "reference_id":  112,
+                       "title":  "Pelantikan PW KBB Sumsel, HD Apresiasi Pengurus KBB Jaga Persatuan dan Kerukunan Sesama",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_22_pelantikan-pw-kbb-sumsel-hd-apresiasi-pengurus-kbb-jaga-persatuan-dan-ke.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_112.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  264661,
+                       "sha256":  "93769810d1f8cad6b48f276877135b3e654c1db9123f87fc43163bbbd200649d"
+                   },
+                   {
+                       "production_id":  113,
+                       "reference_id":  113,
+                       "title":  "Pelantikan PW KBB Kepri, Paman Birin Lantik Kepengurusan Wilayah KBB Kepulauan Riau",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_23_pelantikan-pw-kbb-kepri-paman-birin-lantik-kepengurusan-wilayah-kbb-kepu.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_113.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  137496,
+                       "sha256":  "3679c055283aa14b2a36915277796c26879f64d419c25a02015e5de54646f4a4"
+                   },
+                   {
+                       "production_id":  114,
+                       "reference_id":  114,
+                       "title":  "Pelantikan PW KBB Jateng, Pj Bupati Jepara Didaulat Jadi Penasehat KBB Jawa Tengah",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_24_pelantikan-pw-kbb-jateng-pj-bupati-jepara-didaulat-jadi-penasehat-kbb-ja.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_114.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  48687,
+                       "sha256":  "25d6737cb2e96f4477acffaa57c1ef59ea2d0421d66bc790f30606e66adf81b4"
+                   },
+                   {
+                       "production_id":  115,
+                       "reference_id":  115,
+                       "title":  "Pelantikan PW KBB Jatim, Irianto Lambrie : Warga Banjar Harus Rakat, Kuat serta Bermartabat",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_25_pelantikan-pw-kbb-jatim-irianto-lambrie-warga-banjar-harus-rakat-kuat-se.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_115.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  16472,
+                       "sha256":  "06a565a0bcb15b00c628f42c950b61d98ab32c5a15f8f06a12cd7d326d384b9e"
+                   },
+                   {
+                       "production_id":  116,
+                       "reference_id":  116,
+                       "title":  "Pelantikan PW KBB Jabar, Paman Birin Ajak Bubuhan Banjar di Jawa Barat Dukung Pembangunan IKN",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_26_pelantikan-pw-kbb-jabar-paman-birin-ajak-bubuhan-banjar-di-jawa-barat-du.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_116.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  74155,
+                       "sha256":  "5a7113e3a3d3b1e3f59504e13a9a0fd187e993e68b416346e4426db604489a6d"
+                   },
+                   {
+                       "production_id":  117,
+                       "reference_id":  117,
+                       "title":  "Pelantikan PW KBB DIY, Paman Birin Harapkan Kiprah Bubuhan Banjar di Yogyakarta Untuk Pembangunan Banua",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_27_pelantikan-pw-kbb-diy-paman-birin-harapkan-kiprah-bubuhan-banjar-di-yogy.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_117.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  60258,
+                       "sha256":  "5f60e4544a8d962369dcbf056997ddfaa545e7c8bd40b5e4a36460d0e19162e1"
+                   },
+                   {
+                       "production_id":  118,
+                       "reference_id":  118,
+                       "title":  "Pelopor Teknologi Informasi yang Menghubungkan Komunitas Banjar di Seluruh Dunia",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_28_pelopor-teknologi-informasi-yang-menghubungkan-komunitas-banjar-di-selur.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_118.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  43020,
+                       "sha256":  "3d12d52828ca8f8bafedf13087d1eef4f5b53784d9d410945f9d3514e3011fda"
+                   },
+                   {
+                       "production_id":  119,
+                       "reference_id":  119,
+                       "title":  "Pelantikan KBB Bali, Paman Birin dan Acil Odah Disambut Antusias Warga",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_31_pelantikan-kbb-bali-paman-birin-dan-acil-odah-disambut-antusias-warga.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_119.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  154858,
+                       "sha256":  "a358a40f4993622d58bc81f30d3ea5e58739ae13ca2fc39788c6cc624dda49d9"
+                   },
+                   {
+                       "production_id":  120,
+                       "reference_id":  120,
+                       "title":  "PP KBB Sadunia Gelar Halal Bihalal, Sahbirin Noor Ajak Eratkan Bubuhan Banjar",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_32_pp-kbb-sadunia-gelar-halal-bihalal-sahbirin-noor-ajak-eratkan-bubuhan-ba.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_120.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  384412,
+                       "sha256":  "b5d6e6e9265fd82d9c2709aa970bcbc35c1a166a485ca3bf10308af57bda3c19"
+                   },
+                   {
+                       "production_id":  121,
+                       "reference_id":  121,
+                       "title":  "Presiden PP KBB Sa Dunia Jamu 52 Kulaan Banjar Malaysia di Mahligai Pancasila Banjarmasin",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/news_official_30_presiden-pp-kbb-sa-dunia-jamu-52-kulaan-banjar-malaysia-di-mahligai-panc.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_121.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  206698,
+                       "sha256":  "f95f42b8ad41eb0d4d697b6d543295f4087737fb6bb5f061bdc3d28e6913bb09"
+                   },
+                   {
+                       "production_id":  122,
+                       "reference_id":  122,
+                       "title":  "KBB Sadunia Mengucapkan Selamat Tahun Baru Islam 1 Muharram 1448 H",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/img_6a3a9b37299b77.06176686.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_122.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  138674,
+                       "sha256":  "229e5b429281608f39a682c63b603d3b720bf9b53278674e13ec0d7ade6fbfbb"
+                   },
+                   {
+                       "production_id":  123,
+                       "reference_id":  123,
+                       "title":  "Paman Birin Terus Eratkan Sinergi Bubuhan Banjar Sa’dunia",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/img_6a3f044686fba7.57406686.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_123.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  62356,
+                       "sha256":  "14ce19619715063651ada4ba7178ccf6ebaa3688f33b907b8d491f92dcc9435b"
+                   },
+                   {
+                       "production_id":  124,
+                       "reference_id":  124,
+                       "title":  "Pengukuhan dan Pelantikan Pengurus Pusat Kerukunan Bubuhan Banjar Sedunia Masa bakti 2022 sampai dengan 2026 Bergerak \u0027Banjar Menjemput Dunia\u0027",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/img_6a3f0623716422.62072084.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_124.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  27219,
+                       "sha256":  "fcebfa2dbe744bb1c9338ff657463c0bc06fc35c2abc403d5969ea53b8764225"
+                   },
+                   {
+                       "production_id":  125,
+                       "reference_id":  125,
+                       "title":  "KBB Gelar Raker Perdana, Dihadiri 23 PW Provinsi dan Luar Negeri",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/img_6a3f0a62793569.91139489.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_125.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  46747,
+                       "sha256":  "d46523f08aa57f0f9fb5f642d689111bd47f102c94f765f6d03962fe5e50cb87"
+                   },
+                   {
+                       "production_id":  126,
+                       "reference_id":  126,
+                       "title":  "Paman Birin Lantik PW KBB Sumut, serukan Warga Banjar dukung Program Gubsu",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/img_6a3f0cc43c3f95.89868580.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_126.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  135024,
+                       "sha256":  "4be4d355ee7db28178291da554091d589b58a5df5004782c0e3fde0571b168a0"
+                   },
+                   {
+                       "production_id":  127,
+                       "reference_id":  127,
+                       "title":  "Pelantikan PW KBB, Gubernur Sulteng : Saya Sudah Bagian Orang Banjar",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/img_6a3f0dd208dea5.59057873.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_127.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  143333,
+                       "sha256":  "fd635157b5609687e4641a4875b301b37f4a12b87a9f29ae023daf27e68e3a75"
+                   },
+                   {
+                       "production_id":  128,
+                       "reference_id":  128,
+                       "title":  "Ketua KBB Kepri Pangeran Anom Suhadi dan Jajaran Resmi Dilantik",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/img_6a3f0faaafa0b0.78025264.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_128.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  57608,
+                       "sha256":  "d6bd88b203d8a60601d3cefa903d141e52d43bdca32a0a3fe51cf8f0574836fc"
+                   },
+                   {
+                       "production_id":  130,
+                       "reference_id":  130,
+                       "title":  "Rapat Pengurus Pusat KBB Bahas Persiapan Pra Kongres KBB Sadunia 2026",
+                       "source_url":  "https://kbb-banjarsadunia.site.je/uploads/067_124_rapat-pengurus-pusat-kbb-bahas-persiapan-pra-kongres-kbb-sadunia-2026.jpg",
+                       "deployed_path":  "/article_images/infinity-reference-20261018/article_130.jpg",
+                       "content_type":  "image/jpeg",
+                       "bytes":  188703,
+                       "sha256":  "b02b77a8bbd149b3ac2336a0a15ac5c95c710bc9760809277bd5d7c9321fc9cb"
+                   }
+               ],
+    "skipped":  [
+                    {
+                        "production_id":  100,
+                        "reference_id":  100,
+                        "title":  "Pengurus Pusat KBB Sadunia Gelar Pertemuan Persiapan Pra Kongres Bersama Seluruh DPW SeIndonesia",
+                        "source_path":  "/uploads/107_thumbnail-pra-kongres-dpw-seindonesia.webp",
+                        "content_type":  "text/html"
+                    },
+                    {
+                        "production_id":  129,
+                        "reference_id":  129,
+                        "title":  "Ulama Banjar Dari Masa Ke Masa",
+                        "source_path":  "/uploads/105_thumbnail-ulama-banjar-dari-masa-ke-masa.webp",
+                        "content_type":  "text/html"
+                    },
+                    {
+                        "production_id":  132,
+                        "reference_id":  132,
+                        "title":  "Epilog: Transmigrasi, Pertanian, Relasi Etnis, dan Jalan Panjang Kedaulatan Pangan",
+                        "source_path":  "/uploads/106_thumbnail-epilog-transmigrasi-pertanian-kedaulatan-pangan.webp",
+                        "content_type":  "text/html"
+                    },
+                    {
+                        "production_id":  133,
+                        "reference_id":  133,
+                        "title":  "PP KBB Sadunia Silaturahmi dengan Kadis Pendidikan dan Kabid Kebudayaan Pemprov Bahas Pra Kongres 2026",
+                        "source_path":  "/uploads/068_silaturahmi-pp-kbb-kadis-pendidikan-kabid-kebudayaan-pemprov-pra-kongres-2026.webp",
+                        "content_type":  "text/html"
+                    },
+                    {
+                        "production_id":  134,
+                        "reference_id":  134,
+                        "title":  "PP KBB Sadunia Bahas Rencana Tempat Pra Kongres 2026 di Bogor",
+                        "source_path":  "/uploads/069_prakongres-bogor-rencana-tempat-ketum-koorwil-jawa-sumatera-pw-jabar.webp",
+                        "content_type":  "text/html"
+                    },
+                    {
+                        "production_id":  135,
+                        "reference_id":  135,
+                        "title":  "KBB Sadunia Dukung Putra-Putri Banua Kuliah ke Luar Negeri",
+                        "source_path":  "/uploads/070_kbb-taiwan-putra-putri-banua-jembatan-pendidikan.webp",
+                        "content_type":  "text/html"
+                    },
+                    {
+                        "production_id":  136,
+                        "reference_id":  136,
+                        "title":  "PW KBB Kepri Gelar Maulid Nabi, Perkuat Silaturahmi Masyarakat Banjar di Kepri",
+                        "source_path":  "/uploads/071_berita-maulid-nabi-pw-kbb-kepri-clickindonesia.webp",
+                        "content_type":  "text/html"
+                    },
+                    {
+                        "production_id":  137,
+                        "reference_id":  137,
+                        "title":  "Kehadiran Paman Birin Hangatkan Suasana Upacara HUT ke-81 RI",
+                        "source_path":  "/uploads/072_berita-paman-birin-upacara-hut-ri-81-kalimantanpost.webp",
+                        "content_type":  "text/html"
+                    },
+                    {
+                        "production_id":  138,
+                        "reference_id":  138,
+                        "title":  "Galeri Ucapan KBB Sadunia: Harjad Kalsel, HUT RI, dan Maulid Nabi",
+                        "source_path":  "/uploads/073_ucapan-harjad-kalsel-pp-kbb-sadunia.webp",
+                        "content_type":  "text/html"
+                    },
+                    {
+                        "production_id":  139,
+                        "reference_id":  139,
+                        "title":  "KBB Sumatera Utara Sampaikan Duka Cita atas Wafatnya Drs. H. Rudy Ariffin",
+                        "source_path":  "/uploads/101_ucapan-duka-cita-rudy-ariffin-pw-kbb-sumatera-utara.webp",
+                        "content_type":  "text/html"
+                    },
+                    {
+                        "production_id":  140,
+                        "reference_id":  140,
+                        "title":  "Paman Birin Hadiri Pemakaman H. Rudy Ariffin",
+                        "source_path":  "/uploads/091_duka-cita-rudy-ariffin-suasana-takziah-1.webp",
+                        "content_type":  "text/html"
+                    },
+                    {
+                        "production_id":  141,
+                        "reference_id":  142,
+                        "title":  "Kamus Ringkas Bahasa Banjar: Cerdas Lestarikan Bahasa Aslimu!",
+                        "source_path":  "/uploads/108_kamus-ringkas-bahasa-banjar-cerdas-lestarikan-bahasa-aslimu.webp",
+                        "content_type":  "text/html"
+                    }
+                ]
+}
