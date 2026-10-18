@@ -113,35 +113,32 @@ function migrateInfinityReferenceArticleImages() {
         106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
         118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 130,
     ];
-    $placeholders = implode(',', array_fill(0, count($articleIds), '?'));
     $imagePrefix = '/article_images/infinity-reference-20261018/article_';
     $db = Database::getInstance()->getConnection();
 
     try {
-        $check = $db->prepare(
-            "SELECT COUNT(*) FROM articles
-             WHERE id IN ($placeholders)
-               AND image_url <> CONCAT(?, id, '.jpg')"
-        );
-        $check->execute(array_merge($articleIds, [$imagePrefix]));
-        if ((int)$check->fetchColumn() === 0) {
+        $expectedFirstImage = $imagePrefix . '59.jpg';
+        $check = $db->query("SELECT image_url FROM articles WHERE id = 59");
+        if ($check->fetchColumn() === $expectedFirstImage) {
             return;
         }
 
         $db->beginTransaction();
-        $update = $db->prepare(
-            "UPDATE articles
-             SET image_url = CONCAT(?, id, '.jpg')
-             WHERE id IN ($placeholders)"
-        );
-        $update->execute(array_merge([$imagePrefix], $articleIds));
+        $update = $db->prepare('UPDATE articles SET image_url = ? WHERE id = ?');
+        $updatedCount = 0;
+        foreach ($articleIds as $articleId) {
+            $update->execute([$imagePrefix . $articleId . '.jpg', $articleId]);
+            $updatedCount += $update->rowCount();
+        }
         $db->commit();
-        error_log('[MIGRATION] Applied InfinityFree reference images to ' . $update->rowCount() . ' articles.');
+        error_log('[MIGRATION] Applied InfinityFree reference images to ' . $updatedCount . ' articles.');
+        header('X-Image-Migration: applied');
     } catch (Throwable $error) {
         if ($db->inTransaction()) {
             $db->rollBack();
         }
         error_log('[MIGRATION_ERROR] InfinityFree article image migration failed: ' . $error->getMessage());
+        header('X-Image-Migration: failed');
     }
 }
 
