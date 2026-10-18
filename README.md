@@ -9,7 +9,7 @@ Source code Portal Kerukunan Bubuhan Banjar (KBB) Sadunia. Aplikasi terdiri dari
 - `backend/config/` — koneksi database dan logger.
 - `backend/database/` — schema dan migration database.
 - `.github/workflows/ci.yml` — pemeriksaan lint, build, dan sintaks PHP.
-- `.github/workflows/deploy-hostinger.yml` — deployment manual ke Hostinger melalui FTPS.
+- `.github/workflows/deploy-hostinger.yml` — deployment otomatis dari branch `main` ke Hostinger melalui FTPS, dengan opsi jalankan ulang secara manual.
 
 ## Menjalankan frontend
 
@@ -37,7 +37,7 @@ find backend -name "*.php" -print0 | xargs -0 -n1 php -l
 
 ## Deployment Hostinger
 
-Deployment kode dijalankan manual dari tab **Actions** setelah GitHub Actions Secrets berikut ditambahkan ke repository:
+Deployment kode berjalan otomatis setiap ada push ke branch `main` setelah GitHub Actions Secrets berikut ditambahkan ke repository. Workflow tetap dapat dijalankan ulang secara manual dari tab **Actions**:
 
 - `HOSTINGER_FTP_SERVER`
 - `HOSTINGER_FTP_USERNAME`
@@ -54,5 +54,5 @@ Migrasi database awal dan pembuatan file `.env` server tetap dilakukan satu kali
 2. Jalankan lint dan build.
 3. Commit lalu push ke `main`.
 4. Pantau workflow **CI** di tab **Actions** GitHub.
-5. Bila ingin menerbitkan perubahan ke Hostinger, jalankan workflow **Deploy to Hostinger** secara manual. Workflow ini membangun frontend dan mengunggah perubahan kode tanpa menyentuh `.env` atau isi folder `uploads`.
+5. Merge atau push perubahan ke branch `main`. Workflow **Deploy to Hostinger** akan membangun frontend dan mengunggah perubahan kode secara otomatis tanpa menyentuh `.env` atau isi folder `uploads`. Jika diperlukan, workflow yang sama bisa dijalankan ulang secara manual dari tab **Actions**.
 
