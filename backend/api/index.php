@@ -103,6 +103,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/Logger.php';
 
+// Temporary, idempotent production migration. Remove this block after the
+// InfinityFree reference images have been applied and verified on Hostinger.
+function migrateInfinityReferenceArticleImages() {
+    $articleIds = [
+        59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
+        75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90,
+        91, 92, 93, 94, 95, 96, 97, 98, 99, 101, 102, 103, 104, 105,
+        106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
+        118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 130,
+    ];
+    $placeholders = implode(',', array_fill(0, count($articleIds), '?'));
+    $imagePrefix = '/article_images/infinity-reference-20261018/article_';
+    $db = Database::getInstance()->getConnection();
+
+    try {
+        $check = $db->prepare(
+            "SELECT COUNT(*) FROM articles
+             WHERE id IN ($placeholders)
+               AND image_url <> CONCAT(?, id, '.jpg')"
+        );
+        $check->execute(array_merge($articleIds, [$imagePrefix]));
+        if ((int)$check->fetchColumn() === 0) {
+            return;
+        }
+
+        $db->beginTransaction();
+        $update = $db->prepare(
+            "UPDATE articles
+             SET image_url = CONCAT(?, id, '.jpg')
+             WHERE id IN ($placeholders)"
+        );
+        $update->execute(array_merge([$imagePrefix], $articleIds));
+        $db->commit();
+        error_log('[MIGRATION] Applied InfinityFree reference images to ' . $update->rowCount() . ' articles.');
+    } catch (Throwable $error) {
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
+        error_log('[MIGRATION_ERROR] InfinityFree article image migration failed: ' . $error->getMessage());
+    }
+}
+
+migrateInfinityReferenceArticleImages();
+
 // ============================================
 // Security & Performance Helpers
 // ============================================
