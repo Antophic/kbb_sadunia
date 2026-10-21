@@ -65,4 +65,3 @@ WHERE id IN (123, 124, 125, 126, 127, 128)
   AND @archive_author_id IS NOT NULL;
 
 COMMIT;
-
