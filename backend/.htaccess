@@ -81,6 +81,11 @@
     RewriteRule ^api/?$ api/index.php [QSA,L]
     RewriteRule ^api/(.*)$ api/index.php [QSA,L]
 
+    # Endpoint SEO publik harus diproses API sebelum fallback SPA.
+    RewriteRule ^robots\.txt$ api/index.php [QSA,L]
+    RewriteRule ^sitemap\.xml$ api/index.php [QSA,L]
+    RewriteRule ^rss\.xml$ api/index.php [QSA,L]
+
     # Uploads — teruskan langsung ke folder uploads
     RewriteRule ^uploads/ - [L]
 
