@@ -67,6 +67,12 @@
     RewriteEngine On
     RewriteBase /
 
+    # Tolak path sensitif sebelum SPA fallback, termasuk saat file belum ada.
+    RewriteRule (^|/)\.(env|git)([./]|$) - [F,NC,L]
+    RewriteRule (^|/)\.user\.ini$ - [F,NC,L]
+    RewriteRule (^|/)[^/]+\.(log|sql|bak|old|orig)$ - [F,NC,L]
+    RewriteRule (^|/)(composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml)$ - [F,NC,L]
+
     # Blokir folder internal jika tanpa sengaja ikut terupload.
     RewriteRule ^(config|database|scripts|logs|vendor)/.*$ - [F,L]
 

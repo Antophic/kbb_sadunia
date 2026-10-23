@@ -2,6 +2,8 @@
 
 Dokumen ini menjelaskan kontrol keamanan yang aktif, tanggung jawab operasional, risiko yang masih diterima, dan cara melaporkan kerentanan. Tidak ada sistem yang dapat dijamin kebal 100%; kontrol di bawah dibuat berlapis agar kegagalan satu lapisan tidak langsung membuka seluruh aplikasi.
 
+Diagram arsitektur dan alur aplikasi yang menjadi pasangan dokumen ini tersedia di [docs/FLOWCHART.md](docs/FLOWCHART.md).
+
 ## Versi yang didukung
 
 Hanya commit terbaru pada branch `main` dan deployment produksi `https://kbbsadunia.com` yang didukung. Perbaikan keamanan diterapkan ke `main` dan diverifikasi oleh CI sebelum/bersamaan dengan deployment Hostinger.

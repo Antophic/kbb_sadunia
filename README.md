@@ -8,6 +8,7 @@ Source code Portal Kerukunan Bubuhan Banjar (KBB) Sadunia. Aplikasi terdiri dari
 - `backend/api/` — endpoint API PHP.
 - `backend/config/` — koneksi database dan logger.
 - `backend/database/` — schema dan migration database.
+- `docs/FLOWCHART.md` — flowchart arsitektur, alur pengunjung, RBAC, artikel, upload, reset password, dan CI/CD.
 - `SECURITY.md` — model keamanan, kontrol yang diterapkan, prosedur pelaporan, dan checklist operasional.
 - `.github/workflows/ci.yml` — pemeriksaan lint, build, dan sintaks PHP.
 - `.github/workflows/deploy-hostinger.yml` — deployment otomatis dari branch `main` ke Hostinger melalui FTPS, dengan opsi jalankan ulang secara manual.
@@ -78,6 +79,12 @@ Portal menggunakan pertahanan berlapis dan tidak hanya bergantung pada frontend:
 - GitHub Actions pihak ketiga dikunci ke commit SHA untuk mengurangi risiko supply-chain.
 
 Detail lengkap, asumsi, risiko tersisa, dan prosedur insiden tersedia di [SECURITY.md](SECURITY.md).
+
+## Flowchart sistem
+
+Alur website disusun berdasarkan route dan kontrol yang benar-benar digunakan aplikasi, bukan diagram konseptual terpisah. Diagram arsitektur, perjalanan pengunjung, login dan otorisasi, hak akses dashboard, siklus artikel, upload, reset password, serta deployment tersedia di [docs/FLOWCHART.md](docs/FLOWCHART.md).
+
+Jika route, endpoint, role, aturan upload, atau workflow deployment berubah, implementasi dan flowchart wajib diperbarui dalam commit yang sama agar dokumentasi tetap menjadi acuan yang akurat.
 
 ## Alur update
 
