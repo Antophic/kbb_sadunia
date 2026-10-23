@@ -17,18 +17,38 @@ if (!file_exists($html_file)) {
 
 $html = file_get_contents($html_file);
 
-function current_origin() {
-    $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https" : "http";
-    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    return $scheme . "://" . $host;
+function configured_origin() {
+    $envFile = __DIR__ . '/.env';
+    if (is_readable($envFile)) {
+        $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines ?: [] as $line) {
+            if (strpos(trim($line), '#') === 0 || strpos($line, '=') === false) continue;
+            [$name, $value] = explode('=', $line, 2);
+            if (trim($name) !== 'FRONTEND_URL') continue;
+            $candidate = trim($value, " \t\n\r\0\x0B\"'");
+            $parts = parse_url($candidate);
+            if ($parts && in_array(strtolower($parts['scheme'] ?? ''), ['http', 'https'], true) && !empty($parts['host'])) {
+                $origin = strtolower($parts['scheme']) . '://' . strtolower($parts['host']);
+                if (!empty($parts['port'])) $origin .= ':' . (int)$parts['port'];
+                return $origin;
+            }
+        }
+    }
+
+    // Fixed production fallback prevents Host-header poisoning.
+    return 'https://kbbsadunia.com';
 }
 
 function replace_meta_tag($html, $pattern, $replacement) {
-    return preg_replace($pattern, $replacement, $html, 1);
+    return preg_replace_callback($pattern, static function () use ($replacement) {
+        return $replacement;
+    }, $html, 1);
 }
 
-$origin = current_origin();
-$canonicalUrl = $origin . strtok($request_uri, '?');
+$origin = configured_origin();
+$requestPath = parse_url($request_uri, PHP_URL_PATH) ?: '/';
+if ($requestPath[0] !== '/' || preg_match('/[\x00-\x1F\x7F]/', $requestPath)) $requestPath = '/';
+$canonicalUrl = htmlspecialchars($origin . $requestPath, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 $defaultImage = $origin . '/logo-kbb.png';
 
 $html = replace_meta_tag($html, '/<meta property="og:url" content="[^"]*" \/>/', '<meta property="og:url" content="'.$canonicalUrl.'" />');
@@ -56,32 +76,37 @@ if (file_exists($db_config)) {
         $article = $stmt->fetch();
         
         if ($article) {
-            $title = htmlspecialchars(trim($article['title']) . " - KBB Sadunia");
+            $title = htmlspecialchars(trim($article['title']) . " - KBB Sadunia", ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
             // Ambil excerpt atau bersihkan content, batasi max 150 karakter
             $raw_desc = !empty($article['excerpt']) ? $article['excerpt'] : "Portal berita dan artikel terlengkap seputar Kerukunan Bubuhan Banjar.";
-            $desc = htmlspecialchars(mb_strimwidth(strip_tags($raw_desc), 0, 150, "..."));
+            $desc = htmlspecialchars(mb_strimwidth(strip_tags($raw_desc), 0, 150, "..."), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
             $image = trim($article['image_url']);
             
             // Konversi URL gambar relatif jadi absolut (penting untuk WhatsApp/Facebook crawler)
             if (strpos($image, 'http') !== 0 && !empty($image)) {
-                $image = $origin . (strpos($image, '/') === 0 ? "" : "/") . ltrim($image, '/');
+                $image = $origin . '/' . ltrim($image, '/');
             }
+            $imageParts = parse_url($image);
+            if (!$imageParts || !in_array(strtolower($imageParts['scheme'] ?? ''), ['http', 'https'], true)) {
+                $image = $defaultImage;
+            }
+            $image = htmlspecialchars($image, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
             // Ganti title meta
-            $html = preg_replace('/<title>.*?<\/title>/s', "<title>$title</title>", $html, 1);
+            $html = replace_meta_tag($html, '/<title>.*?<\/title>/s', "<title>$title</title>");
             
             // Ganti Open Graph (OG) tags
-            $html = preg_replace('/<meta property="og:title" content="[^"]*" \/>/', '<meta property="og:title" content="'.$title.'" />', $html);
-            $html = preg_replace('/<meta property="og:description" content="[^"]*" \/>/', '<meta property="og:description" content="'.$desc.'" />', $html);
+            $html = replace_meta_tag($html, '/<meta property="og:title" content="[^"]*" \/>/', '<meta property="og:title" content="'.$title.'" />');
+            $html = replace_meta_tag($html, '/<meta property="og:description" content="[^"]*" \/>/', '<meta property="og:description" content="'.$desc.'" />');
             
             // Ganti Twitter tags
-            $html = preg_replace('/<meta name="twitter:title" content="[^"]*" \/>/', '<meta name="twitter:title" content="'.$title.'" />', $html);
-            $html = preg_replace('/<meta name="twitter:description" content="[^"]*" \/>/', '<meta name="twitter:description" content="'.$desc.'" />', $html);
+            $html = replace_meta_tag($html, '/<meta name="twitter:title" content="[^"]*" \/>/', '<meta name="twitter:title" content="'.$title.'" />');
+            $html = replace_meta_tag($html, '/<meta name="twitter:description" content="[^"]*" \/>/', '<meta name="twitter:description" content="'.$desc.'" />');
 
             // Ganti image tags jika gambar ada
             if (!empty($image)) {
-                $html = preg_replace('/<meta property="og:image" content="[^"]*" \/>/', '<meta property="og:image" content="'.$image.'" />', $html);
-                $html = preg_replace('/<meta name="twitter:image" content="[^"]*" \/>/', '<meta name="twitter:image" content="'.$image.'" />', $html);
+                $html = replace_meta_tag($html, '/<meta property="og:image" content="[^"]*" \/>/', '<meta property="og:image" content="'.$image.'" />');
+                $html = replace_meta_tag($html, '/<meta name="twitter:image" content="[^"]*" \/>/', '<meta name="twitter:image" content="'.$image.'" />');
             }
         }
     } catch (Throwable $e) {

@@ -172,8 +172,6 @@ export const apiDeleteComment = (id) => fetchAPI(`/comments/${id}`, { method: "D
 // Auth API
 export const apiLogin = (email, password) =>
   fetchAPI("/login", { method: "POST", body: JSON.stringify({ email, password }) });
-export const apiRegister = (name, email, password) =>
-  fetchAPI("/register", { method: "POST", body: JSON.stringify({ name, email, password }) });
 export const apiLogout = () => fetchAPI("/logout", { method: "POST" });
 export const apiGetMe = () => fetchAPI("/me");
 export const apiForgotPassword = (email) => fetchAPI("/forgot-password", { method: "POST", body: JSON.stringify({ email }) });

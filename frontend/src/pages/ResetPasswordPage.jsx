@@ -5,7 +5,6 @@ import { apiResetPassword } from "../services/api";
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
-  const email = searchParams.get("email");
   const navigate = useNavigate();
 
   const [password, setPassword] = useState("");
@@ -19,8 +18,9 @@ export default function ResetPasswordPage() {
     setError("");
     setSuccess("");
 
-    if (password.length < 8) {
-      setError("Password minimal 8 karakter");
+    const characterClasses = [/[a-z]/, /[A-Z]/, /[0-9]/, /[^a-zA-Z0-9]/].filter((pattern) => pattern.test(password)).length;
+    if (password.length < 12 || characterClasses < 3) {
+      setError("Password minimal 12 karakter dan memakai setidaknya 3 jenis karakter");
       return;
     }
     if (password !== confirmPassword) {
@@ -60,12 +60,6 @@ export default function ResetPasswordPage() {
                 {success}
               </div>
             )}
-            {email && !success && !error && (
-              <p className="text-sm text-surface-600 mb-4">
-                Mereset password untuk akun: <strong>{email}</strong>
-              </p>
-            )}
-
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-surface-800 uppercase tracking-wide mb-1.5">Password Baru</label>
@@ -73,7 +67,7 @@ export default function ResetPasswordPage() {
                   type="password" 
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)} 
-                  required minLength={8}
+                  required minLength={12} maxLength={128} autoComplete="new-password"
                   className="w-full px-3 py-2 border border-surface-300 bg-surface-50 text-sm focus:outline-none focus:border-primary-700" 
                 />
               </div>
@@ -83,7 +77,7 @@ export default function ResetPasswordPage() {
                   type="password" 
                   value={confirmPassword} 
                   onChange={(e) => setConfirmPassword(e.target.value)} 
-                  required minLength={8}
+                  required minLength={12} maxLength={128} autoComplete="new-password"
                   className="w-full px-3 py-2 border border-surface-300 bg-surface-50 text-sm focus:outline-none focus:border-primary-700" 
                 />
               </div>

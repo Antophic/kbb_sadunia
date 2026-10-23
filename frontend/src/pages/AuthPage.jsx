@@ -1,29 +1,15 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { apiLogin, apiRegister, apiForgotPassword } from "../services/api";
+import { apiLogin, apiForgotPassword } from "../services/api";
 import OptimizedImage from "../components/OptimizedImage";
-
-// Password strength validator
-function validatePassword(password) {
-  const checks = {
-    length: password.length >= 8,
-    uppercase: /[A-Z]/.test(password),
-    lowercase: /[a-z]/.test(password),
-    number: /[0-9]/.test(password),
-    special: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password),
-  };
-  const score = Object.values(checks).filter(Boolean).length;
-  return { checks, score, isStrong: score >= 4 };
-}
 
 export default function AuthPage() {
   const { login } = useAuth();
   const [mode, setMode] = useState("login");
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [showPwStrength, setShowPwStrength] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const navigate = useNavigate();
   const set = (k) => (e) => {
@@ -32,26 +18,12 @@ export default function AuthPage() {
     if (successMsg) setSuccessMsg("");
   };
 
-  const pwValidation = validatePassword(form.password);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       newErrors.email = "Format email tidak valid";
-    }
-
-    if (mode === "register") {
-      if (!pwValidation.isStrong) {
-        newErrors.password = "Password belum memenuhi kriteria keamanan (Min. 8 karakter, Kombinasi Huruf Besar, Kecil, Angka, & Simbol).";
-      }
-      if (form.password !== form.confirmPassword) {
-        newErrors.confirmPassword = "Konfirmasi password tidak cocok";
-      }
-      if (!form.name.trim()) {
-        newErrors.name = "Nama wajib diisi";
-      }
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -70,11 +42,6 @@ export default function AuthPage() {
         setSuccessMsg("Autentikasi berhasil. Mengalihkan ke dashboard...");
         // Redirect langsung ke admin dashboard
         setTimeout(() => navigate("/admin"), 1000);
-      } else if (mode === "register") {
-        await apiRegister(form.name, form.email, form.password);
-        setSuccessMsg("Akun berhasil dibuat. Silakan masuk.");
-        setMode("login");
-        setForm({ name: "", email: "", password: "", confirmPassword: "" });
       } else if (mode === "forgot") {
         const res = await apiForgotPassword(form.email);
         setSuccessMsg(res.message || "Instruksi reset password telah dikirim ke email Anda.");
@@ -85,9 +52,6 @@ export default function AuthPage() {
       setLoading(false);
     }
   };
-
-  const strengthColors = ["bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-green-400", "bg-green-600"];
-  const strengthLabels = ["Sangat Lemah", "Lemah", "Sedang", "Kuat", "Sangat Kuat"];
 
   return (
     <div className="min-h-[calc(100vh-184px)] flex flex-col md:flex-row bg-white font-sans">
@@ -143,13 +107,11 @@ export default function AuthPage() {
         <div className="w-full max-w-md mx-auto">
           <div className="mb-8">
             <h2 className="text-3xl font-extrabold text-surface-900 tracking-tight mb-2">
-              {mode === "login" ? "Selamat Datang" : mode === "register" ? "Buat Akun KBB" : "Reset Password"}
+              {mode === "login" ? "Selamat Datang" : "Reset Password"}
             </h2>
             <p className="text-surface-500">
               {mode === "login" 
                 ? "Masukkan email dan password untuk melanjutkan." 
-                : mode === "register" 
-                ? "Daftar sekarang untuk bergabung dengan komunitas." 
                 : "Masukkan email yang terdaftar untuk mengatur ulang sandi."}
             </p>
           </div>
@@ -161,18 +123,6 @@ export default function AuthPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-            {mode === "register" && (
-              <div>
-                <label htmlFor="auth-name" className="block text-sm font-medium text-surface-700 mb-1.5">Nama Lengkap</label>
-                <input 
-                  id="auth-name" type="text" value={form.name} onChange={set("name")} required 
-                  className={`block w-full px-4 py-3 rounded-md border-surface-300 bg-surface-50 text-surface-900 focus:bg-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${errors.name ? 'border-red-500 ring-1 ring-red-500' : 'border'}`} 
-                  placeholder="Hasan Basri"
-                />
-                {errors.name && <p className="text-xs text-red-600 mt-1.5">{errors.name}</p>}
-              </div>
-            )}
-
             <div>
               <label htmlFor="auth-email" className="block text-sm font-medium text-surface-700 mb-1.5">Alamat Email</label>
               <input 
@@ -192,36 +142,11 @@ export default function AuthPage() {
                   )}
                 </div>
                 <input 
-                  id="auth-password" type="password" value={form.password} onChange={set("password")} onFocus={() => mode === "register" && setShowPwStrength(true)} required minLength={8} autoComplete={mode === "login" ? "current-password" : "new-password"}
+                  id="auth-password" type="password" value={form.password} onChange={set("password")} required minLength={1} maxLength={128} autoComplete="current-password"
                   className={`block w-full px-4 py-3 rounded-md border-surface-300 bg-surface-50 text-surface-900 focus:bg-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${errors.password ? 'border-red-500 ring-1 ring-red-500' : 'border'}`} 
                   placeholder="••••••••"
                 />
                 {errors.password && <p className="text-xs text-red-600 mt-1.5">{errors.password}</p>}
-                
-                {mode === "register" && showPwStrength && form.password.length > 0 && (
-                  <div className="mt-3">
-                    <div className="flex gap-1 mb-1.5">
-                      {[0, 1, 2, 3, 4].map((i) => (
-                        <div key={i} className={`h-1.5 w-full rounded-full transition-all duration-300 ${i < pwValidation.score ? strengthColors[pwValidation.score - 1] : "bg-surface-200"}`} />
-                      ))}
-                    </div>
-                    <p className={`text-xs font-semibold ${pwValidation.score >= 4 ? "text-green-600" : pwValidation.score >= 3 ? "text-yellow-600" : "text-red-500"}`}>
-                      Kekuatan Sandi: {strengthLabels[Math.max(0, pwValidation.score - 1)] || "Sangat Lemah"}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {mode === "register" && (
-              <div>
-                <label htmlFor="auth-confirm" className="block text-sm font-medium text-surface-700 mb-1.5">Konfirmasi Password</label>
-                <input 
-                  id="auth-confirm" type="password" value={form.confirmPassword} onChange={set("confirmPassword")} required minLength={8} autoComplete="new-password" 
-                  className={`block w-full px-4 py-3 rounded-md border-surface-300 bg-surface-50 text-surface-900 focus:bg-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${errors.confirmPassword ? 'border-red-500 ring-1 ring-red-500' : 'border'}`} 
-                  placeholder="••••••••"
-                />
-                {errors.confirmPassword && <p className="text-xs text-red-600 mt-1.5">{errors.confirmPassword}</p>}
               </div>
             )}
 
@@ -237,7 +162,7 @@ export default function AuthPage() {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 ) : null}
-                {loading ? "Memproses..." : mode === "login" ? "Masuk" : mode === "register" ? "Daftar Akun" : "Kirim Tautan Reset"}
+                {loading ? "Memproses..." : mode === "login" ? "Masuk" : "Kirim Tautan Reset"}
               </button>
             </div>
           </form>

@@ -108,13 +108,19 @@ export default function App() {
                 <Route path="/admin/articles" element={<ManageArticles />} />
                 <Route path="/admin/articles/create" element={<ArticleEditor />} />
                 <Route path="/admin/articles/edit/:id" element={<ArticleEditor />} />
+                <Route path="/admin/media" element={<ManageMedia />} />
+                <Route path="/admin/books" element={<ManageBooks />} />
+              </Route>
+
+              <Route element={<ProtectedRoute allowedRoles={['admin', 'editor']} />}>
                 <Route path="/admin/comments" element={<ManageComments />} />
                 <Route path="/admin/categories" element={<ManageCategories />} />
                 <Route path="/admin/tags" element={<ManageTags />} />
-                <Route path="/admin/media" element={<ManageMedia />} />
+              </Route>
+
+              <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
                 <Route path="/admin/users" element={<ManageUsers />} />
                 <Route path="/admin/settings" element={<ManageSettings />} />
-                <Route path="/admin/books" element={<ManageBooks />} />
               </Route>
 
               <Route path="*" element={<NotFoundPage />} />

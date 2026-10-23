@@ -50,6 +50,10 @@ export default function ManageUsers() {
         alert("Hanya Admin yang dapat menambah/mengedit pengguna.");
         return;
     }
+    if (form.password && form.password.length < 12) {
+        alert("Password minimal 12 karakter.");
+        return;
+    }
     setSubmitting(true);
     try {
       if (editingId) {
@@ -156,7 +160,7 @@ export default function ManageUsers() {
                   <div className="relative">
                     <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
                       className="w-full pl-10 pr-4 py-2.5 border border-surface-300 rounded-xl bg-white text-surface-900 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all outline-none"
-                      placeholder="••••••••" {...(!editingId ? {required: true} : {})} />
+                      placeholder="Minimal 12 karakter" minLength={form.password ? 12 : undefined} maxLength={128} autoComplete="new-password" {...(!editingId ? {required: true} : {})} />
                     <KeyRound size={18} className="absolute left-3.5 top-3 text-surface-400" />
                   </div>
                 </div>

@@ -1,5 +1,17 @@
 {
+    "name": "antophic/kbb-sadunia",
+    "description": "Backend API Portal Kerukunan Bubuhan Banjar Sadunia",
+    "type": "project",
+    "license": "proprietary",
     "require": {
-        "ezyang/htmlpurifier": "^4.17"
+        "php": ">=8.2",
+        "ext-fileinfo": "*",
+        "ext-pdo": "*",
+        "ezyang/htmlpurifier": "^4.19.1"
+    },
+    "config": {
+        "allow-plugins": {},
+        "optimize-autoloader": true,
+        "sort-packages": true
     }
 }

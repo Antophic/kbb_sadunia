@@ -215,7 +215,8 @@ function booksDeleteUploadedFiles($book) {
 
         $path = realpath(__DIR__ . '/..' . $url);
         $uploadsRoot = realpath(__DIR__ . '/../uploads');
-        if ($path && $uploadsRoot && strpos($path, $uploadsRoot) === 0 && is_file($path)) {
+        $uploadsPrefix = $uploadsRoot ? rtrim($uploadsRoot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : '';
+        if ($path && $uploadsPrefix && strpos($path, $uploadsPrefix) === 0 && is_file($path)) {
             @unlink($path);
         }
     }
@@ -245,10 +246,19 @@ function uploadBookFile() {
 
     $handle = fopen($file['tmp_name'], 'rb');
     $magic = $handle ? fread($handle, 4) : '';
-    if ($handle) fclose($handle);
+    $eofMarkerFound = false;
+    if ($handle) {
+        $tailLength = min(2048, max(0, (int)$file['size']));
+        if ($tailLength > 0) {
+            fseek($handle, -$tailLength, SEEK_END);
+            $tail = fread($handle, $tailLength);
+            $eofMarkerFound = is_string($tail) && strpos($tail, '%%EOF') !== false;
+        }
+        fclose($handle);
+    }
 
     $allowedMime = ['application/pdf', 'application/x-pdf', 'application/octet-stream'];
-    if ($extension !== 'pdf' || $magic !== '%PDF' || !in_array($mimeType, $allowedMime, true)) {
+    if ($extension !== 'pdf' || $magic !== '%PDF' || !$eofMarkerFound || !in_array($mimeType, $allowedMime, true)) {
         http_response_code(400);
         echo json_encode(['error' => 'File buku harus berupa PDF yang valid']);
         return;
@@ -259,7 +269,7 @@ function uploadBookFile() {
         mkdir($uploadDir, 0755, true);
     }
 
-    $filename = uniqid('book_', true) . '.pdf';
+    $filename = 'book_' . bin2hex(random_bytes(16)) . '.pdf';
     $destination = $uploadDir . $filename;
 
     if (!move_uploaded_file($file['tmp_name'], $destination)) {

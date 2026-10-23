@@ -16,10 +16,10 @@ jobs:
         working-directory: frontend
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
@@ -27,6 +27,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Lint
         run: npm run lint
@@ -39,14 +42,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@d52fc211a0436f8839a587b3b5b8efddab4744ea # v2
         with:
           php-version: "8.2"
           extensions: pdo_mysql, mbstring, fileinfo, json, openssl, gd
+          tools: composer:v2
+
+      - name: Validate and install backend dependencies
+        working-directory: backend
+        run: |
+          composer validate --strict --no-interaction
+          composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      - name: Audit backend dependencies
+        working-directory: backend
+        run: composer audit --locked --no-interaction
 
       - name: Check PHP syntax
-        run: find backend -name "*.php" -print0 | xargs -0 -n1 php -l
+        run: find backend -path backend/vendor -prune -o -name "*.php" -print0 | xargs -0 -n1 php -l
 
+      - name: Verify production security headers are configured
+        run: |
+          grep -q "Strict-Transport-Security" backend/.htaccess
+          grep -q "Content-Security-Policy" backend/.htaccess

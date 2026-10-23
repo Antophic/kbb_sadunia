@@ -75,29 +75,33 @@ export default function AdminDashboard() {
             <p className="text-sm text-surface-500 ">Kelola buku digital PDF, cover, penulis, dan kategori bacaan.</p>
           </Link>
           
-          <Link to="/admin/categories" className="group bg-white p-6 rounded-2xl border border-surface-200 shadow-sm hover:shadow-lg hover:border-primary-300 transition-all duration-300 flex flex-col items-start text-left relative overflow-hidden">
-            <div className="bg-orange-50 /20 p-4 rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300">
-              <FolderTree size={32} className="text-orange-600 " />
-            </div>
-            <h2 className="text-xl font-bold text-surface-900 mb-1 group-hover:text-primary-600 ">Kategori</h2>
-            <p className="text-sm text-surface-500 ">Kelola kategori topik berita utama.</p>
-          </Link>
+          {['admin', 'editor'].includes(user?.role) && (
+            <>
+              <Link to="/admin/categories" className="group bg-white p-6 rounded-2xl border border-surface-200 shadow-sm hover:shadow-lg hover:border-primary-300 transition-all duration-300 flex flex-col items-start text-left relative overflow-hidden">
+                <div className="bg-orange-50 /20 p-4 rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <FolderTree size={32} className="text-orange-600 " />
+                </div>
+                <h2 className="text-xl font-bold text-surface-900 mb-1 group-hover:text-primary-600 ">Kategori</h2>
+                <p className="text-sm text-surface-500 ">Kelola kategori topik berita utama.</p>
+              </Link>
 
-          <Link to="/admin/tags" className="group bg-white p-6 rounded-2xl border border-surface-200 shadow-sm hover:shadow-lg hover:border-primary-300 transition-all duration-300 flex flex-col items-start text-left relative overflow-hidden">
-            <div className="bg-green-50 /20 p-4 rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300">
-              <Tags size={32} className="text-green-600 " />
-            </div>
-            <h2 className="text-xl font-bold text-surface-900 mb-1 group-hover:text-primary-600 ">Tag (Label)</h2>
-            <p className="text-sm text-surface-500 ">Kelola spesifik label tag pada artikel.</p>
-          </Link>
-          
-          <Link to="/admin/comments" className="group bg-white p-6 rounded-2xl border border-surface-200 shadow-sm hover:shadow-lg hover:border-primary-300 transition-all duration-300 flex flex-col items-start text-left relative overflow-hidden">
-            <div className="bg-pink-50 /20 p-4 rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300">
-              <MessageSquare size={32} className="text-pink-600 " />
-            </div>
-            <h2 className="text-xl font-bold text-surface-900 mb-1 group-hover:text-primary-600 ">Komentar</h2>
-            <p className="text-sm text-surface-500 ">Moderasi tanggapan dari pembaca.</p>
-          </Link>
+              <Link to="/admin/tags" className="group bg-white p-6 rounded-2xl border border-surface-200 shadow-sm hover:shadow-lg hover:border-primary-300 transition-all duration-300 flex flex-col items-start text-left relative overflow-hidden">
+                <div className="bg-green-50 /20 p-4 rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <Tags size={32} className="text-green-600 " />
+                </div>
+                <h2 className="text-xl font-bold text-surface-900 mb-1 group-hover:text-primary-600 ">Tag (Label)</h2>
+                <p className="text-sm text-surface-500 ">Kelola spesifik label tag pada artikel.</p>
+              </Link>
+
+              <Link to="/admin/comments" className="group bg-white p-6 rounded-2xl border border-surface-200 shadow-sm hover:shadow-lg hover:border-primary-300 transition-all duration-300 flex flex-col items-start text-left relative overflow-hidden">
+                <div className="bg-pink-50 /20 p-4 rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <MessageSquare size={32} className="text-pink-600 " />
+                </div>
+                <h2 className="text-xl font-bold text-surface-900 mb-1 group-hover:text-primary-600 ">Komentar</h2>
+                <p className="text-sm text-surface-500 ">Moderasi tanggapan dari pembaca.</p>
+              </Link>
+            </>
+          )}
 
           {user?.role === 'admin' && (
             <Link to="/admin/users" className="group bg-white p-6 rounded-2xl border border-surface-200 shadow-sm hover:shadow-lg hover:border-primary-300 transition-all duration-300 flex flex-col items-start text-left relative overflow-hidden">

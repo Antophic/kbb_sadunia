@@ -21,9 +21,11 @@ header_remove('X-Powered-By');
 header('Content-Type: application/json');
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
-header('X-XSS-Protection: 1; mode=block');
+header('X-XSS-Protection: 0');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+header('X-Permitted-Cross-Domain-Policies: none');
+header('Cross-Origin-Opener-Policy: same-origin');
 
 // --------------------------------------------
 // Load environment variables early
@@ -59,25 +61,55 @@ function envValue($key, $default = '') {
     return $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key) ?: $default;
 }
 
-$frontend_url = envValue('FRONTEND_URL');
-if (!$frontend_url) {
-    $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    // Fallback dinamis ke domain saat ini (misal di shared hosting frontend & backend 1 domain)
-    $frontend_url = $scheme . '://' . $host;
-    
-    // Khusus environment lokal untuk development fallback
-    if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false) {
-        $frontend_url = 'http://localhost:5173';
-    }
+function isHttpsRequest() {
+    if (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') return true;
+    return strtolower((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https';
 }
-header("Access-Control-Allow-Origin: $frontend_url");
+
+function normalizeOrigin($url) {
+    $parts = parse_url(trim((string)$url));
+    if (!$parts || empty($parts['scheme']) || empty($parts['host'])) return '';
+    $scheme = strtolower($parts['scheme']);
+    if (!in_array($scheme, ['http', 'https'], true)) return '';
+    $origin = $scheme . '://' . strtolower($parts['host']);
+    if (!empty($parts['port'])) $origin .= ':' . (int)$parts['port'];
+    return $origin;
+}
+
+function trustedFrontendUrl() {
+    $configured = normalizeOrigin(envValue('FRONTEND_URL'));
+    if ($configured !== '') return $configured;
+
+    $rawHost = strtolower((string)($_SERVER['HTTP_HOST'] ?? ''));
+    $host = preg_replace('/:\d+$/', '', $rawHost);
+    if (in_array($host, ['localhost', '127.0.0.1'], true)) {
+        return 'http://localhost:5173';
+    }
+
+    // Production fallback is intentionally fixed to prevent Host-header poisoning.
+    return 'https://kbbsadunia.com';
+}
+
+$frontend_url = trustedFrontendUrl();
+$raw_request_origin = trim((string)($_SERVER['HTTP_ORIGIN'] ?? ''));
+$request_origin = normalizeOrigin($raw_request_origin);
+header('Vary: Origin');
+if ($request_origin !== '' && hash_equals($frontend_url, $request_origin)) {
+    header("Access-Control-Allow-Origin: $frontend_url");
+}
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-CSRF-Token');
 header('Access-Control-Allow-Credentials: true');
 header("Content-Security-Policy: default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none';");
+if (isHttpsRequest()) {
+    header('Strict-Transport-Security: max-age=31536000');
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    if ($raw_request_origin !== '' && ($request_origin === '' || !hash_equals($frontend_url, $request_origin))) {
+        http_response_code(403);
+        exit;
+    }
     http_response_code(200);
     exit;
 }
@@ -92,9 +124,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         setcookie('csrf_token', $signed_token, [
             'expires' => time() + 86400,
             'path' => '/',
-            'secure' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on'),
+            'secure' => isHttpsRequest(),
             'httponly' => false,
-            'samesite' => 'Lax'
+            'samesite' => 'Strict'
         ]);
         $_COOKIE['csrf_token'] = $signed_token;
     }
@@ -119,11 +151,6 @@ function setPublicCacheHeaders($seconds = 300) {
 
 function getCanonicalBaseUrl() {
     global $frontend_url;
-    $host = $_SERVER['HTTP_HOST'] ?? '';
-    if ($host && strpos($host, 'localhost') === false && strpos($host, '127.0.0.1') === false) {
-        $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
-        return $scheme . '://' . $host;
-    }
     return rtrim($frontend_url, '/');
 }
 
@@ -132,9 +159,16 @@ function getCanonicalBaseUrl() {
  */
 function requireJsonContentType() {
     $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
-    if (strpos($contentType, 'application/json') === false) {
+    if (!preg_match('#^application/json(?:\s*;|$)#i', trim($contentType))) {
         http_response_code(415);
         echo json_encode(['error' => 'Content-Type must be application/json']);
+        exit;
+    }
+
+    $contentLength = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
+    if ($contentLength > 1024 * 1024) {
+        http_response_code(413);
+        echo json_encode(['error' => 'Request body too large']);
         exit;
     }
 }
@@ -143,7 +177,30 @@ function requireJsonContentType() {
  * Helper to get JSON body
  */
 function getJsonBody() {
-    return json_decode(file_get_contents('php://input'), true) ?? [];
+    $raw = file_get_contents('php://input');
+    if ($raw === '' || $raw === false) return [];
+
+    // Do not rely only on Content-Length: chunked/malformed requests may omit it.
+    if (strlen($raw) > 1024 * 1024) {
+        http_response_code(413);
+        echo json_encode(['error' => 'Request body too large']);
+        exit;
+    }
+
+    try {
+        $decoded = json_decode($raw, true, 64, JSON_THROW_ON_ERROR);
+    } catch (JsonException $error) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid JSON body']);
+        exit;
+    }
+
+    if (!is_array($decoded)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'JSON body must be an object']);
+        exit;
+    }
+    return $decoded;
 }
 
 /**
@@ -242,7 +299,7 @@ function validateCSRFToken() {
     }
 
     $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-    if (preg_match('#/api/(login|register|forgot-password|reset-password)$#', $uri)) {
+    if (preg_match('#/api/(login|forgot-password|reset-password)$#', $uri)) {
         return true;
     }
 
@@ -252,20 +309,20 @@ function validateCSRFToken() {
     $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
     $referer = $_SERVER['HTTP_REFERER'] ?? '';
     
-    $allowedOrigin = parse_url($frontend_url, PHP_URL_HOST);
-    
+    $allowedOrigin = normalizeOrigin($frontend_url);
+
     if ($origin) {
-        $requestOrigin = parse_url($origin, PHP_URL_HOST);
-        if ($requestOrigin !== $allowedOrigin) {
+        $requestOrigin = normalizeOrigin($origin);
+        if ($requestOrigin === '' || !hash_equals($allowedOrigin, $requestOrigin)) {
             logSecurity('CSRF_FAIL', "Origin mismatch: expected=$allowedOrigin got=$requestOrigin");
             http_response_code(403);
             echo json_encode(['error' => 'CSRF validation failed: Origin mismatch']);
             exit;
         }
     } elseif ($referer) {
-        $refererHost = parse_url($referer, PHP_URL_HOST);
-        if ($refererHost !== $allowedOrigin) {
-            logSecurity('CSRF_FAIL', "Referer mismatch: expected=$allowedOrigin got=$refererHost");
+        $refererOrigin = normalizeOrigin($referer);
+        if ($refererOrigin === '' || !hash_equals($allowedOrigin, $refererOrigin)) {
+            logSecurity('CSRF_FAIL', "Referer mismatch: expected=$allowedOrigin got=$refererOrigin");
             http_response_code(403);
             echo json_encode(['error' => 'CSRF validation failed: Referer mismatch']);
             exit;
@@ -324,12 +381,23 @@ function logRequest($handler) {
 // JWT Auth Helpers
 // ============================================
 
+function base64UrlDecode($value) {
+    if (!is_string($value) || $value === '') return false;
+    $remainder = strlen($value) % 4;
+    if ($remainder) $value .= str_repeat('=', 4 - $remainder);
+    return base64_decode(strtr($value, '-_', '+/'), true);
+}
+
 function generateToken($user) {
+    $issuedAt = time();
     $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256']);
     $payload = json_encode([
-        'user_id' => $user['id'],
-        'role' => $user['role'],
-        'exp' => time() + 86400 // 1 day
+        'user_id' => (int)$user['id'],
+        'role' => (string)$user['role'],
+        'iat' => $issuedAt,
+        'exp' => $issuedAt + 28800, // 8 hours
+        'jti' => bin2hex(random_bytes(16)),
+        'uv' => strtotime((string)$user['updated_at']),
     ]);
     $base64UrlHeader = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
     $base64UrlPayload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($payload));
@@ -341,35 +409,56 @@ function generateToken($user) {
 function verifyToken($token) {
     $parts = explode('.', $token);
     if (count($parts) !== 3) return false;
+
+    $headerJson = base64UrlDecode($parts[0]);
+    $payloadJson = base64UrlDecode($parts[1]);
+    if ($headerJson === false || $payloadJson === false) return false;
+
+    $header = json_decode($headerJson, true);
+    $payload = json_decode($payloadJson, true);
+    if (!is_array($header) || !is_array($payload)) return false;
+    if (($header['typ'] ?? '') !== 'JWT' || ($header['alg'] ?? '') !== 'HS256') return false;
+    if (empty($payload['user_id']) || empty($payload['exp']) || empty($payload['iat']) || !isset($payload['uv'])) return false;
+    if (!is_numeric($payload['exp']) || !is_numeric($payload['iat']) || (int)$payload['exp'] <= time()) return false;
+    if ((int)$payload['iat'] > time() + 60) return false;
+
     $signature = hash_hmac('sha256', $parts[0] . "." . $parts[1], envValue('API_SECRET_KEY'), true);
     $base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
-    if (hash_equals($base64UrlSignature, $parts[2])) {
-        // Cek blacklist
-        $tokenHash = hash('sha256', $token);
-        $db = Database::getInstance()->getConnection();
-        $stmt = $db->prepare("SELECT 1 FROM token_blacklist WHERE token_hash = ? AND expires_at > NOW()");
-        $stmt->execute([$tokenHash]);
-        if ($stmt->fetchColumn()) {
-            return false;
-        }
+    if (!hash_equals($base64UrlSignature, $parts[2])) return false;
 
-        $payload = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $parts[1])), true);
-        if ($payload && $payload['exp'] > time()) {
-            return $payload;
-        }
+    $db = Database::getInstance()->getConnection();
+
+    // Explicit logout revokes the exact token immediately.
+    $tokenHash = hash('sha256', $token);
+    $stmt = $db->prepare("SELECT 1 FROM token_blacklist WHERE token_hash = ? AND expires_at > NOW()");
+    $stmt->execute([$tokenHash]);
+    if ($stmt->fetchColumn()) return false;
+
+    // Role changes, password changes, and deleted users invalidate old tokens.
+    $stmt = $db->prepare("SELECT id, role, updated_at FROM users WHERE id = ? LIMIT 1");
+    $stmt->execute([(int)$payload['user_id']]);
+    $user = $stmt->fetch();
+    if (!$user) return false;
+
+    $currentUserVersion = strtotime((string)$user['updated_at']);
+    if ($currentUserVersion === false || (int)$payload['uv'] !== $currentUserVersion) {
+        return false;
     }
-    return false;
+
+    $payload['user_id'] = (int)$user['id'];
+    $payload['role'] = (string)$user['role'];
+    return $payload;
 }
 
 function getAuthHeader() {
-    if (!empty($_COOKIE['token'])) {
-        return 'Bearer ' . $_COOKIE['token'];
-    }
     if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
         return trim($_SERVER['HTTP_AUTHORIZATION']);
     } elseif (function_exists('getallheaders')) {
         $headers = getallheaders();
-        return $headers['Authorization'] ?? '';
+        if (!empty($headers['Authorization'])) return trim($headers['Authorization']);
+    }
+    if (!empty($_COOKIE['token'])) {
+        return 'Bearer ' . $_COOKIE['token'];
     }
     return '';
 }
@@ -426,7 +515,6 @@ $routes = [
         '/api/contact' => 'submitContact',
         '/api/login' => 'loginUser',
         '/api/logout' => 'logoutUser',
-        // '/api/register' => 'registerUser', // Disabled public registration for security
         '/api/upload' => 'uploadImage',
         '/api/upload-book' => 'uploadBookFile',
         '/api/books' => 'createBook',
@@ -630,6 +718,8 @@ function getArticles() {
 
     if ($statusFilter === 'published' && !$isAdminOrAuthor) {
         setPublicCacheHeaders($search ? 120 : 180);
+    } else {
+        setPrivateNoStoreHeaders();
     }
     
     $bindParams = [];
@@ -822,6 +912,9 @@ function getArticle($id) {
         return;
     }
 
+    $isLive = $article['status'] === 'published' && !empty($article['published_at']) && strtotime($article['published_at']) <= time();
+    if (!$isLive) setPrivateNoStoreHeaders();
+
     // Get tags
     $tagStmt = $db->prepare(
         "SELECT t.name FROM tags t JOIN article_tags at2 ON t.id = at2.tag_id WHERE at2.article_id = :id"
@@ -884,6 +977,10 @@ function getArticleBySlug($slug) {
         echo json_encode(['error' => 'Article not found']);
         return;
     }
+
+
+    $isLive = $article['status'] === 'published' && !empty($article['published_at']) && strtotime($article['published_at']) <= time();
+    if (!$isLive) setPrivateNoStoreHeaders();
 
     $tagStmt = $db->prepare(
         "SELECT t.name, t.slug FROM tags t JOIN article_tags at2 ON t.id = at2.tag_id WHERE at2.article_id = :id ORDER BY t.name"
@@ -962,30 +1059,64 @@ function getSitemap() {
     ]);
 }
 
+function setPrivateNoStoreHeaders() {
+    header('Cache-Control: no-store, max-age=0');
+    header('Pragma: no-cache');
+}
+
+function validatePasswordStrength($password) {
+    $password = (string)$password;
+    $length = function_exists('mb_strlen') ? mb_strlen($password) : strlen($password);
+    if ($length < 12) return 'Password minimal 12 karakter';
+    if ($length > 128) return 'Password maksimal 128 karakter';
+
+    $classes = 0;
+    $classes += preg_match('/[a-z]/', $password) ? 1 : 0;
+    $classes += preg_match('/[A-Z]/', $password) ? 1 : 0;
+    $classes += preg_match('/\d/', $password) ? 1 : 0;
+    $classes += preg_match('/[^a-zA-Z0-9]/', $password) ? 1 : 0;
+    if ($classes < 3) return 'Password harus memakai sedikitnya 3 jenis karakter: huruf kecil, huruf besar, angka, atau simbol';
+
+    $normalized = strtolower(preg_replace('/\s+/', '', $password));
+    $blocked = ['password123!', 'qwerty123456', 'admin123456!', 'kbbsadunia123'];
+    if (in_array($normalized, $blocked, true)) return 'Password terlalu umum';
+    return null;
+}
+
+function privacySafeEmailId($email) {
+    return substr(hash('sha256', strtolower(trim((string)$email))), 0, 12);
+}
+
 function loginUser() {
+    setPrivateNoStoreHeaders();
     requireJsonContentType();
     // Basic rate limit
     checkRateLimit('loginUser', 10, 60);
 
-    $data = json_decode(file_get_contents('php://input'), true);
+    $data = getJsonBody();
     if (!$data || empty($data['email']) || empty($data['password'])) {
         http_response_code(400);
         echo json_encode(['error' => 'Email and password required']);
         return;
     }
 
-    $email = $data['email'];
+    $email = strtolower(trim((string)$data['email']));
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 254) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid credentials']);
+        return;
+    }
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
     $db = Database::getInstance()->getConnection();
 
     // 1. Check Brute Force Lockout
     // Hitung kegagalan 15 menit terakhir
-    $stmt = $db->prepare("SELECT COUNT(*) FROM login_attempts WHERE email = :email AND success = FALSE AND attempted_at > DATE_SUB(NOW(), INTERVAL 15 MINUTE)");
-    $stmt->execute([':email' => $email]);
+    $stmt = $db->prepare("SELECT COUNT(*) FROM login_attempts WHERE email = :email AND ip_address = :ip AND success = FALSE AND attempted_at > DATE_SUB(NOW(), INTERVAL 15 MINUTE)");
+    $stmt->execute([':email' => $email, ':ip' => $ip]);
     $recentFails = $stmt->fetchColumn();
 
     if ($recentFails >= 5) {
-        logSecurity('BRUTE_FORCE_LOCKOUT', "Account locked for 15 mins due to 5+ failed attempts: $email");
+        logSecurity('BRUTE_FORCE_LOCKOUT', 'Login blocked for 15 mins after 5+ failures: account=' . privacySafeEmailId($email) . " ip=$ip");
         http_response_code(429);
         header("Retry-After: 900"); // 15 mins
         echo json_encode(['error' => 'Account temporarily locked due to multiple failed login attempts. Please try again after 15 minutes.']);
@@ -993,39 +1124,46 @@ function loginUser() {
     }
 
     // 2. Process Login
-    $stmt = $db->prepare("SELECT id, password_hash, role, display_name FROM users WHERE email = :email");
+    $stmt = $db->prepare("SELECT id, password_hash, role, display_name, updated_at FROM users WHERE email = :email");
     $stmt->execute([':email' => $email]);
     $user = $stmt->fetch();
-    
-    if ($user && password_verify($data['password'], $user['password_hash'])) {
+
+    // Always execute password_verify to reduce account-enumeration timing signals.
+    $dummyHash = '$2y$10$RWdRlcNIJz0CJ0NYCFY1CumC2bo3vMqenbqvOt8WMtEVCAVD50qwm';
+    $passwordValid = password_verify((string)$data['password'], $user['password_hash'] ?? $dummyHash);
+
+    if ($user && $passwordValid) {
         // Success
+        $stmt = $db->prepare("DELETE FROM login_attempts WHERE email = :email AND ip_address = :ip AND success = FALSE");
+        $stmt->execute([':email' => $email, ':ip' => $ip]);
         $stmt = $db->prepare("INSERT INTO login_attempts (email, ip_address, success) VALUES (:email, :ip, TRUE)");
         $stmt->execute([':email' => $email, ':ip' => $ip]);
 
         $token = generateToken($user);
         
         setcookie('token', $token, [
-            'expires' => time() + 86400,
+            'expires' => time() + 28800,
             'path' => '/',
-            'secure' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on'),
+            'secure' => isHttpsRequest(),
             'httponly' => true,
-            'samesite' => 'Lax'
+            'samesite' => 'Strict'
         ]);
         
-        logSecurity('LOGIN_SUCCESS', "User logged in: $email");
+        logSecurity('LOGIN_SUCCESS', 'User logged in: account=' . privacySafeEmailId($email));
         echo json_encode(['user' => ['id' => $user['id'], 'name' => $user['display_name'], 'role' => $user['role']]]);
     } else {
         // Failed
         $stmt = $db->prepare("INSERT INTO login_attempts (email, ip_address, success) VALUES (:email, :ip, FALSE)");
         $stmt->execute([':email' => $email, ':ip' => $ip]);
 
-        logSecurity('LOGIN_FAIL', "Failed login attempt: $email. Fails in last 15m: " . ($recentFails + 1));
+        logSecurity('LOGIN_FAIL', 'Failed login attempt: account=' . privacySafeEmailId($email) . '. Fails in last 15m: ' . ($recentFails + 1));
         http_response_code(401);
         echo json_encode(['error' => 'Invalid credentials']);
     }
 }
 
 function forgotPassword() {
+    setPrivateNoStoreHeaders();
     requireJsonContentType();
     // Rate limit: max 3 per menit untuk mencegah spam
     checkRateLimit('forgotPassword', 3, 60); 
@@ -1037,8 +1175,8 @@ function forgotPassword() {
         return;
     }
     
-    $email = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $email = strtolower(trim((string)$data['email']));
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 254) {
         http_response_code(400);
         echo json_encode(['error' => 'Invalid email format']);
         return;
@@ -1051,6 +1189,7 @@ function forgotPassword() {
     
     if ($user) {
         $token = bin2hex(random_bytes(32));
+        $tokenHash = hash('sha256', $token);
         
         // Tabel password_resets sudah dibuat via schema.sql / init_db.php
         try {
@@ -1059,10 +1198,10 @@ function forgotPassword() {
             $stmt->execute([':email' => $email]);
             
             $stmt = $db->prepare("INSERT INTO password_resets (email, token, created_at) VALUES (:email, :token, NOW())");
-            $stmt->execute([':email' => $email, ':token' => $token]);
+            $stmt->execute([':email' => $email, ':token' => $tokenHash]);
             
             global $frontend_url;
-            $resetLink = rtrim($frontend_url, '/') . '/auth/reset-password?token=' . $token . '&email=' . urlencode($email);
+            $resetLink = rtrim($frontend_url, '/') . '/auth/reset-password?token=' . rawurlencode($token);
             
             // Ambil domain dari FRONTEND_URL secara dinamis
             $mailDomain = parse_url($frontend_url, PHP_URL_HOST) ?: ($_SERVER['HTTP_HOST'] ?? 'localhost');
@@ -1078,11 +1217,10 @@ function forgotPassword() {
             $message .= "Salam,\nTim KBB Sadunia";
             
             $headers = "From: noreply@" . $mailDomain . "\r\n";
-            $headers .= "Reply-To: support@" . $mailDomain . "\r\n";
-            $headers .= "X-Mailer: PHP/" . phpversion();
+            $headers .= "Reply-To: support@" . $mailDomain;
             
             @mail($to, $subject, $message, $headers);
-            logSecurity('FORGOT_PASSWORD', "Reset link sent to: $email");
+            logSecurity('FORGOT_PASSWORD', 'Reset link sent: account=' . privacySafeEmailId($email));
             
         } catch (Exception $e) {
             error_log("Reset password error: " . $e->getMessage());
@@ -1094,16 +1232,14 @@ function forgotPassword() {
 }
 
 function logoutUser() {
+    setPrivateNoStoreHeaders();
     $authHeader = getAuthHeader();
     if (strpos($authHeader, 'Bearer ') === 0) {
         $token = substr($authHeader, 7);
-        $tokenHash = hash('sha256', $token);
-        
-        $parts = explode('.', $token);
-        if (count($parts) === 3) {
-            $payload = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $parts[1])), true);
-            $exp = $payload['exp'] ?? time() + 86400;
-            
+        $payload = verifyToken($token);
+        if ($payload) {
+            $tokenHash = hash('sha256', $token);
+            $exp = min((int)$payload['exp'], time() + 28800);
             $db = Database::getInstance()->getConnection();
             $stmt = $db->prepare("INSERT INTO token_blacklist (token_hash, expires_at) VALUES (?, FROM_UNIXTIME(?))");
             $stmt->execute([$tokenHash, $exp]);
@@ -1118,47 +1254,12 @@ function logoutUser() {
     setcookie('token', '', [
         'expires' => time() - 3600,
         'path' => '/',
-        'secure' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on'),
+        'secure' => isHttpsRequest(),
         'httponly' => true,
-        'samesite' => 'Lax'
+        'samesite' => 'Strict'
     ]);
     
     echo json_encode(['message' => 'Logged out successfully']);
-}
-
-function registerUser() {
-    requireJsonContentType();
-    checkRateLimit('registerUser', 5, 3600); // 5 per hour
-    $data = json_decode(file_get_contents('php://input'), true);
-    if (!$data || empty($data['email']) || empty($data['password']) || empty($data['name'])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'All fields required']);
-        return;
-    }
-    $db = Database::getInstance()->getConnection();
-    
-    // Check if email exists
-    $stmt = $db->prepare("SELECT id FROM users WHERE email = :email");
-    $stmt->execute([':email' => $data['email']]);
-    if ($stmt->fetch()) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Email already registered']);
-        return;
-    }
-
-    $hash = password_hash($data['password'], PASSWORD_BCRYPT);
-    $username = explode('@', $data['email'])[0] . rand(100, 999);
-    
-    $stmt = $db->prepare("INSERT INTO users (username, email, password_hash, display_name, role) VALUES (:u, :e, :p, :n, 'subscriber')");
-    $stmt->execute([
-        ':u' => $username,
-        ':e' => $data['email'],
-        ':p' => $hash,
-        ':n' => strip_tags($data['name'])
-    ]);
-    
-    logSecurity('REGISTER_SUCCESS', "New user registered: {$data['email']}");
-    echo json_encode(['message' => 'Registration successful']);
 }
 
 function generateUniqueSlug($db, $baseSlug) {
@@ -1225,18 +1326,34 @@ function sanitizeArticleContent($content) {
     if (file_exists($autoloadPath)) {
         require_once $autoloadPath;
         $config = HTMLPurifier_Config::createDefault();
-        $config->set('HTML.Allowed', 'p,br,strong,em,ul,li,ol,h1,h2,h3,h4,h5,h6,blockquote,a[href|title|target],img[src|alt|title]');
+        $config->set('HTML.Allowed', 'p,br,strong,b,em,i,u,s,ul,li,ol,h1,h2,h3,h4,h5,h6,blockquote,section,div[class],figure,figcaption,a[href|title|target|rel],img[src|alt|title|width|height|loading]');
         $config->set('URI.AllowedSchemes', ['http' => true, 'https' => true, 'mailto' => true]);
+        $config->set('HTML.TargetBlank', true);
+        $config->set('HTML.Nofollow', true);
+        $config->set('Cache.DefinitionImpl', null);
         $purifier = new HTMLPurifier($config);
         return $purifier->purify($html);
     }
 
-    $allowedTags = '<p><br><strong><em><ul><li><ol><h1><h2><h3><h4><h5><h6><blockquote><a><img>';
-    $clean = strip_tags($html, $allowedTags);
-    $clean = preg_replace('/\s+on[a-z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $clean);
-    $clean = preg_replace('/\s+(href|src)\s*=\s*("|\')?\s*javascript:[^\s>]*\2?/i', ' $1="#"', $clean);
-    $clean = preg_replace('/\s+style\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $clean);
-    return $clean;
+    // Fail closed if the audited sanitizer is unavailable. Never fall back to
+    // regex-based HTML filtering because browser parsing has many bypass cases.
+    error_log('[SECURITY] HTMLPurifier unavailable; article HTML reduced to escaped plain text');
+    return nl2br(htmlspecialchars(strip_tags($html), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
+}
+
+function cleanPublicUrl($value, $maxLength = 2048) {
+    $url = trim((string)$value);
+    if ($url === '') return '';
+    if (strlen($url) > $maxLength || preg_match('/[\x00-\x1F\x7F]/', $url)) return '';
+
+    // Local uploads/assets are allowed, but protocol-relative URLs are not.
+    if ($url[0] === '/' && strpos($url, '//') !== 0) return $url;
+
+    $parts = parse_url($url);
+    if (!$parts || empty($parts['scheme']) || empty($parts['host'])) return '';
+    if (isset($parts['user']) || isset($parts['pass'])) return '';
+    if (!in_array(strtolower($parts['scheme']), ['http', 'https'], true)) return '';
+    return $url;
 }
 
 function validateArticleMediaContext($db, $data, $excludeId = null) {
@@ -1245,7 +1362,7 @@ function validateArticleMediaContext($db, $data, $excludeId = null) {
     $imageCredit = trim(strip_tags((string)($data['image_credit'] ?? '')));
     $sourceName = trim(strip_tags((string)($data['source_name'] ?? '')));
 
-    if ($imageUrl === '' || strlen($imageCaption) < 12 || strlen($imageCredit) < 2 || $sourceName === '' || empty($data['image_context_confirmed'])) {
+    if ($imageUrl === '' || cleanPublicUrl($imageUrl) === '' || strlen($imageCaption) < 12 || strlen($imageCredit) < 2 || $sourceName === '' || empty($data['image_context_confirmed'])) {
         return [
             'status' => 422,
             'error' => 'Foto wajib memiliki caption, kredit, sumber, dan konfirmasi kesesuaian konteks sebelum artikel diterbitkan',
@@ -1301,7 +1418,7 @@ function createArticle() {
         return;
     }
 
-    $data = json_decode(file_get_contents('php://input'), true);
+    $data = getJsonBody();
     if (!$data || !isset($data['title'])) {
         http_response_code(400);
         echo json_encode(['error' => 'Title is required']);
@@ -1344,17 +1461,17 @@ function createArticle() {
         ':slug' => $slug,
         ':excerpt' => $clean_excerpt,
         ':content' => $clean_content,
-        ':image' => filter_var($data['image_url'] ?? '', FILTER_SANITIZE_URL),
+        ':image' => cleanPublicUrl($data['image_url'] ?? ''),
         ':image_caption' => strip_tags($data['image_caption'] ?? ''),
         ':image_credit' => strip_tags($data['image_credit'] ?? ''),
-        ':video' => filter_var($data['video_url'] ?? '', FILTER_SANITIZE_URL),
+        ':video' => cleanPublicUrl($data['video_url'] ?? ''),
         ':cat' => empty($data['category_id']) ? null : $data['category_id'],
         ':author' => $payload['user_id'], // Force author_id from token, NOT from request
         ':status' => $status,
         ':featured' => ($payload['role'] === 'admin') ? (!empty($data['featured']) ? 1 : 0) : 0, // Only admin can feature
         ':read_time' => strip_tags($data['read_time'] ?? '5 menit'),
         ':source_name' => strip_tags($data['source_name'] ?? ''),
-        ':source_url' => filter_var($data['source_url'] ?? '', FILTER_SANITIZE_URL),
+        ':source_url' => cleanPublicUrl($data['source_url'] ?? ''),
         ':editor_note' => strip_tags($data['editor_note'] ?? ''),
         ':meta_title' => strip_tags($data['meta_title'] ?? ''),
         ':meta_description' => strip_tags($data['meta_description'] ?? ''),
@@ -1440,16 +1557,16 @@ function updateArticle($id) {
         ':slug' => $slug,
         ':excerpt' => $clean_excerpt,
         ':content' => $clean_content,
-        ':image' => filter_var($data['image_url'] ?? '', FILTER_SANITIZE_URL),
+        ':image' => cleanPublicUrl($data['image_url'] ?? ''),
         ':image_caption' => strip_tags($data['image_caption'] ?? ''),
         ':image_credit' => strip_tags($data['image_credit'] ?? ''),
-        ':video' => filter_var($data['video_url'] ?? '', FILTER_SANITIZE_URL),
+        ':video' => cleanPublicUrl($data['video_url'] ?? ''),
         ':cat' => empty($data['category_id']) ? null : $data['category_id'],
         ':status' => $status,
         ':featured' => ($payload['role'] === 'admin') ? (!empty($data['featured']) ? 1 : 0) : 0,
         ':read_time' => strip_tags($data['read_time'] ?? '5 menit'),
         ':source_name' => strip_tags($data['source_name'] ?? ''),
-        ':source_url' => filter_var($data['source_url'] ?? '', FILTER_SANITIZE_URL),
+        ':source_url' => cleanPublicUrl($data['source_url'] ?? ''),
         ':editor_note' => strip_tags($data['editor_note'] ?? ''),
         ':meta_title' => strip_tags($data['meta_title'] ?? ''),
         ':meta_description' => strip_tags($data['meta_description'] ?? ''),
@@ -1586,7 +1703,7 @@ function submitContact() {
             ':message' => htmlspecialchars(trim($data['message']))
         ]);
         
-        logSecurity('CONTACT_MESSAGE', "Message received from: " . $data['email']);
+        logSecurity('CONTACT_MESSAGE', 'Message received: account=' . privacySafeEmailId($data['email']));
         echo json_encode(['message' => 'Pesan berhasil dikirim.']);
     } catch (PDOException $e) {
         error_log("[CONTACT] DB error: " . $e->getMessage());
@@ -1670,7 +1787,7 @@ function subscribe() {
              ON DUPLICATE KEY UPDATE status = 'active', email = VALUES(email)"
         );
         $stmt->execute([':email' => $email]);
-        logSecurity('NEWSLETTER_SUBSCRIBE', "New subscriber: " . $safeEmail);
+        logSecurity('NEWSLETTER_SUBSCRIBE', 'New subscriber: account=' . privacySafeEmailId($email));
         echo json_encode(['message' => 'Subscribed successfully', 'email' => $safeEmail]);
     } catch (PDOException $e) {
         error_log("[NEWSLETTER] DB error: " . $e->getMessage());
@@ -1722,9 +1839,18 @@ function uploadImage() {
         return;
     }
 
-    if (@getimagesize($file['tmp_name']) === false) {
+    $imageInfo = @getimagesize($file['tmp_name']);
+    if ($imageInfo === false) {
         http_response_code(400);
         echo json_encode(['error' => 'Invalid image content or corrupt file']);
+        return;
+    }
+
+    $width = (int)($imageInfo[0] ?? 0);
+    $height = (int)($imageInfo[1] ?? 0);
+    if ($width < 1 || $height < 1 || $width > 8000 || $height > 8000 || ($width * $height) > 40000000) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Dimensi gambar tidak diizinkan']);
         return;
     }
 
@@ -1734,7 +1860,7 @@ function uploadImage() {
     elseif ($mimeType === 'image/png') $extension = '.png';
     elseif ($mimeType === 'image/webp') $extension = '.webp';
 
-    $filename = uniqid('img_', true) . $extension;
+    $filename = 'img_' . bin2hex(random_bytes(16)) . $extension;
     $uploadDir = __DIR__ . '/../uploads/';
     $destination = $uploadDir . $filename;
 
@@ -1756,6 +1882,7 @@ function uploadImage() {
 }
 
 function getCurrentUser() {
+    setPrivateNoStoreHeaders();
     $authHeader = getAuthHeader();
     if (strpos($authHeader, 'Bearer ') !== 0) {
         http_response_code(401);
@@ -1784,6 +1911,7 @@ function getCurrentUser() {
 }
 
 function resetPassword() {
+    setPrivateNoStoreHeaders();
     requireJsonContentType();
     checkRateLimit('resetPassword', 5, 300);
     
@@ -1793,27 +1921,42 @@ function resetPassword() {
         echo json_encode(['error' => 'Token and new password required']);
         return;
     }
-    
-    $db = Database::getInstance()->getConnection();
-    $stmt = $db->prepare("SELECT email FROM password_resets WHERE token = :token AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)");
-    $stmt->execute([':token' => $data['token']]);
-    $reset = $stmt->fetch();
-    
-    if (!$reset) {
+
+    if ($passwordError = validatePasswordStrength($data['password'])) {
         http_response_code(400);
-        echo json_encode(['error' => 'Invalid or expired token']);
+        echo json_encode(['error' => $passwordError]);
         return;
     }
     
-    $hash = password_hash($data['password'], PASSWORD_BCRYPT);
-    $updateStmt = $db->prepare("UPDATE users SET password_hash = :hash WHERE email = :email");
-    $updateStmt->execute([':hash' => $hash, ':email' => $reset['email']]);
-    
-    $delStmt = $db->prepare("DELETE FROM password_resets WHERE email = :email");
-    $delStmt->execute([':email' => $reset['email']]);
-    
-    logSecurity('PASSWORD_RESET', "Password reset for: " . $reset['email']);
-    echo json_encode(['message' => 'Password reset successfully']);
+    $db = Database::getInstance()->getConnection();
+    $db->beginTransaction();
+    try {
+        // Lock the reset row so the same token cannot win two concurrent requests.
+        $stmt = $db->prepare("SELECT email FROM password_resets WHERE token = :token AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR) FOR UPDATE");
+        $stmt->execute([':token' => hash('sha256', (string)$data['token'])]);
+        $reset = $stmt->fetch();
+
+        if (!$reset) {
+            $db->rollBack();
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid or expired token']);
+            return;
+        }
+
+        $hash = password_hash($data['password'], PASSWORD_BCRYPT);
+        $updateStmt = $db->prepare("UPDATE users SET password_hash = :hash WHERE email = :email");
+        $updateStmt->execute([':hash' => $hash, ':email' => $reset['email']]);
+
+        $delStmt = $db->prepare("DELETE FROM password_resets WHERE email = :email");
+        $delStmt->execute([':email' => $reset['email']]);
+        $db->commit();
+
+        logSecurity('PASSWORD_RESET', 'Password reset: account=' . privacySafeEmailId($reset['email']));
+        echo json_encode(['message' => 'Password reset successfully']);
+    } catch (Throwable $error) {
+        if ($db->inTransaction()) $db->rollBack();
+        throw $error;
+    }
 }
 
 function getSitemapXml() {
@@ -1899,6 +2042,7 @@ function getRssXml() {
 }
 
 function getComments() {
+    setPrivateNoStoreHeaders();
     $authHeader = getAuthHeader();
     if (strpos($authHeader, 'Bearer ') !== 0) { http_response_code(401); echo json_encode(['error' => 'Unauthorized']); return; }
     $token = substr($authHeader, 7);
@@ -2143,8 +2287,14 @@ function deleteCategory($id) {
 // ============================================
 
 function getSettings() {
+    setPrivateNoStoreHeaders();
+    $authHeader = getAuthHeader();
+    if (strpos($authHeader, 'Bearer ') !== 0) { http_response_code(401); echo json_encode(['error' => 'Unauthorized']); return; }
+    $payload = verifyToken(substr($authHeader, 7));
+    if (!$payload || $payload['role'] !== 'admin') { http_response_code(403); echo json_encode(['error' => 'Forbidden: Admins only']); return; }
+
     $db = Database::getInstance()->getConnection();
-    $stmt = $db->query("SELECT setting_key, setting_value FROM settings");
+    $stmt = $db->query("SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('site_title', 'site_tagline', 'site_logo', 'footer_text')");
     $settings = [];
     while ($row = $stmt->fetch()) {
         $settings[$row['setting_key']] = $row['setting_value'];
@@ -2161,11 +2311,28 @@ function updateSettings() {
     if (!$payload || $payload['role'] !== 'admin') { http_response_code(403); echo json_encode(['error' => 'Forbidden']); return; }
 
     $data = getJsonBody();
+    $allowedSettings = [
+        'site_title' => 120,
+        'site_tagline' => 255,
+        'site_logo' => 2048,
+        'footer_text' => 500,
+    ];
     $db = Database::getInstance()->getConnection();
     $stmt = $db->prepare("INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?");
-    
+
     foreach ($data as $key => $value) {
-        $stmt->execute([$key, $value, $value]);
+        if (!array_key_exists($key, $allowedSettings) || !is_scalar($value)) continue;
+        $cleanValue = trim(strip_tags((string)$value));
+        if ($key === 'site_logo' && $cleanValue !== '') {
+            $cleanValue = cleanPublicUrl($cleanValue, $allowedSettings[$key]);
+            if ($cleanValue === '') {
+                http_response_code(400); echo json_encode(['error' => 'URL logo tidak valid']); return;
+            }
+        }
+        if (strlen($cleanValue) > $allowedSettings[$key]) {
+            http_response_code(400); echo json_encode(['error' => "Nilai $key terlalu panjang"]); return;
+        }
+        $stmt->execute([$key, $cleanValue, $cleanValue]);
     }
     echo json_encode(['message' => 'Settings updated successfully']);
 }
@@ -2246,14 +2413,15 @@ function deleteTag($id) {
 }
 
 function getUsers() {
+    setPrivateNoStoreHeaders();
     $authHeader = getAuthHeader();
     if (strpos($authHeader, 'Bearer ') !== 0) { http_response_code(401); echo json_encode(['error' => 'Unauthorized']); return; }
     $token = substr($authHeader, 7);
     $payload = verifyToken($token);
-    if (!$payload || !in_array($payload['role'], ['admin', 'editor'])) { http_response_code(403); echo json_encode(['error' => 'Forbidden']); return; }
+    if (!$payload || $payload['role'] !== 'admin') { http_response_code(403); echo json_encode(['error' => 'Forbidden: Admins only']); return; }
 
     $db = Database::getInstance()->getConnection();
-    // Editors can only see, Admins can edit/delete
+    // User records include PII, so this endpoint is deliberately admin-only.
     $stmt = $db->query("SELECT id, username, email, display_name, role, created_at FROM users ORDER BY created_at DESC");
     echo json_encode(['data' => $stmt->fetchAll()]);
 }
@@ -2270,14 +2438,30 @@ function createUser() {
     if (empty($data['email']) || empty($data['password']) || empty($data['display_name']) || empty($data['role'])) {
         http_response_code(400); echo json_encode(['error' => 'All fields required']); return;
     }
+
+    $email = strtolower(trim((string)$data['email']));
+    $displayName = trim(strip_tags((string)$data['display_name']));
+    $allowedRoles = ['admin', 'editor', 'author', 'subscriber'];
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 254) {
+        http_response_code(400); echo json_encode(['error' => 'Invalid email']); return;
+    }
+    if ($displayName === '' || mb_strlen($displayName) > 100) {
+        http_response_code(400); echo json_encode(['error' => 'Invalid display name']); return;
+    }
+    if (!in_array($data['role'], $allowedRoles, true)) {
+        http_response_code(400); echo json_encode(['error' => 'Invalid role']); return;
+    }
+    if ($passwordError = validatePasswordStrength($data['password'])) {
+        http_response_code(400); echo json_encode(['error' => $passwordError]); return;
+    }
     
     $db = Database::getInstance()->getConnection();
     $hash = password_hash($data['password'], PASSWORD_BCRYPT);
-    $username = explode('@', $data['email'])[0] . rand(100, 999);
+    $username = preg_replace('/[^a-z0-9._-]/i', '', explode('@', $email)[0]) . random_int(100, 999);
     
     try {
         $stmt = $db->prepare("INSERT INTO users (username, email, password_hash, display_name, role) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$username, $data['email'], $hash, $data['display_name'], $data['role']]);
+        $stmt->execute([$username, $email, $hash, $displayName, $data['role']]);
         echo json_encode(['message' => 'User created']);
     } catch (PDOException $e) {
         http_response_code(400); echo json_encode(['error' => 'Email or username already exists']);
@@ -2296,16 +2480,35 @@ function updateUser($id) {
     if (empty($data['email']) || empty($data['display_name']) || empty($data['role'])) {
         http_response_code(400); echo json_encode(['error' => 'Missing fields']); return;
     }
+
+    $email = strtolower(trim((string)$data['email']));
+    $displayName = trim(strip_tags((string)$data['display_name']));
+    $allowedRoles = ['admin', 'editor', 'author', 'subscriber'];
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 254) {
+        http_response_code(400); echo json_encode(['error' => 'Invalid email']); return;
+    }
+    if ($displayName === '' || mb_strlen($displayName) > 100) {
+        http_response_code(400); echo json_encode(['error' => 'Invalid display name']); return;
+    }
+    if (!in_array($data['role'], $allowedRoles, true)) {
+        http_response_code(400); echo json_encode(['error' => 'Invalid role']); return;
+    }
+    if ((int)$payload['user_id'] === (int)$id && $data['role'] !== 'admin') {
+        http_response_code(400); echo json_encode(['error' => 'Admin tidak dapat menurunkan role akunnya sendiri']); return;
+    }
+    if (!empty($data['password']) && ($passwordError = validatePasswordStrength($data['password']))) {
+        http_response_code(400); echo json_encode(['error' => $passwordError]); return;
+    }
     
     $db = Database::getInstance()->getConnection();
     try {
         if (!empty($data['password'])) {
             $hash = password_hash($data['password'], PASSWORD_BCRYPT);
             $stmt = $db->prepare("UPDATE users SET email = ?, display_name = ?, role = ?, password_hash = ? WHERE id = ?");
-            $stmt->execute([$data['email'], $data['display_name'], $data['role'], $hash, $id]);
+            $stmt->execute([$email, $displayName, $data['role'], $hash, $id]);
         } else {
             $stmt = $db->prepare("UPDATE users SET email = ?, display_name = ?, role = ? WHERE id = ?");
-            $stmt->execute([$data['email'], $data['display_name'], $data['role'], $id]);
+            $stmt->execute([$email, $displayName, $data['role'], $id]);
         }
         echo json_encode(['message' => 'User updated']);
     } catch (PDOException $e) {
@@ -2332,6 +2535,7 @@ function deleteUser($id) {
 }
 
 function getMediaFiles() {
+    setPrivateNoStoreHeaders();
     $authHeader = getAuthHeader();
     if (strpos($authHeader, 'Bearer ') !== 0) { http_response_code(401); echo json_encode(['error' => 'Unauthorized']); return; }
     $token = substr($authHeader, 7);

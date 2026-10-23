@@ -58,10 +58,19 @@ if (empty(trim($username))) {
     die("Error: Username tidak boleh kosong.\n");
 }
 
-$password = promptPassword("Masukkan password (minimal 8 karakter): ");
+$password = promptPassword("Masukkan password (minimal 12 karakter): ");
 
-if (strlen($password) < 8) {
-    die("Error: Password terlalu pendek (minimal 8 karakter).\n");
+if (strlen($password) < 12) {
+    die("Error: Password terlalu pendek (minimal 12 karakter).\n");
+}
+
+$classes = 0;
+$classes += preg_match('/[a-z]/', $password) ? 1 : 0;
+$classes += preg_match('/[A-Z]/', $password) ? 1 : 0;
+$classes += preg_match('/\d/', $password) ? 1 : 0;
+$classes += preg_match('/[^a-zA-Z0-9]/', $password) ? 1 : 0;
+if ($classes < 3) {
+    die("Error: Password harus memakai sedikitnya 3 jenis karakter.\n");
 }
 
 $displayName = promptInput("Masukkan nama tampilan (Display Name) [default: Administrator]: ");
