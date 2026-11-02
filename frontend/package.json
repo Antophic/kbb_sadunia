@@ -16,12 +16,12 @@
     "dompurify": "^3.4.17",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
-    "lucide-react": "^1.17.0",
+    "lucide-react": "^1.64.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-helmet-async": "^3.0.0",
     "react-quill-new": "^3.8.3",
-    "react-router-dom": "^7.18.4",
+    "react-router-dom": "^7.18.5",
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
