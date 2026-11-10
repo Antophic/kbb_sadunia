@@ -134,6 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/Logger.php';
+require_once __DIR__ . '/content_migrations.php';
 
 // ============================================
 // Security & Performance Helpers
@@ -564,6 +565,18 @@ if (isset($routes[$method])) {
 if ($handler && function_exists($handler)) {
     logRequest($handler);
     try {
+        if ($method === 'GET' && in_array($handler, [
+            'getArticles',
+            'getArticle',
+            'getArticleBySlug',
+            'getCategories',
+            'getTrending',
+            'getSitemap',
+            'getSitemapXml',
+            'getRssXml',
+        ], true)) {
+            runEditorialContentMigrations(Database::getInstance()->getConnection());
+        }
         call_user_func_array($handler, $params);
     } catch (Throwable $e) {
         logSecurity('SERVER_ERROR', "Exception in $handler: " . $e->getMessage());

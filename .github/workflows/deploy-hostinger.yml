@@ -65,6 +65,7 @@ jobs:
           cp -a frontend/dist/. release/public_html/
           cp backend/api/index.php release/public_html/api/index.php
           cp backend/api/books.php release/public_html/api/books.php
+          cp backend/api/content_migrations.php release/public_html/api/content_migrations.php
           cp -a backend/config/. release/public_html/config/
           cp -a backend/vendor/. release/public_html/vendor/
           cp backend/.htaccess release/public_html/.htaccess

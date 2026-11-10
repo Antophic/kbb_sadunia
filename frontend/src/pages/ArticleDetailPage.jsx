@@ -409,7 +409,7 @@ export default function ArticleDetailPage() {
             {article.image_url && (
               <figure className="mb-8">
                 <div className="relative border border-surface-200 p-1 bg-surface-50 shadow-sm animate-fade-in overflow-hidden">
-                  <OptimizedImage src={article.image_url} alt={article.title} className="w-full h-auto object-cover max-h-[500px] transition-opacity duration-500 hover:scale-[1.02] transform" sizes="(min-width: 1024px) 760px, 100vw" />
+                  <OptimizedImage src={article.image_url} alt={article.title} className="w-full max-h-[860px] object-contain bg-white transition-opacity duration-500 hover:scale-[1.01] transform" sizes="(min-width: 1024px) 760px, 100vw" />
                 </div>
                 <figcaption className="mt-3 text-[11px] font-semibold text-surface-500 border-l-[3px] border-primary-600 pl-3 py-0.5 leading-snug">
                   {article.image_caption || (opinion ? "Ilustrasi foto untuk artikel opini. Keterangan rinci belum dicantumkan redaksi." : "Foto artikel. Keterangan rinci belum dicantumkan redaksi.")}
