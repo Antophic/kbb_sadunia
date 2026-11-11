@@ -14,6 +14,7 @@ function runEditorialContentMigrations(PDO $db): void {
     $statusStmt = $db->prepare('SELECT setting_value FROM settings WHERE setting_key = :key LIMIT 1');
     $statusStmt->execute([':key' => $migrationKey]);
     if ($statusStmt->fetchColumn() === 'complete') {
+        runEditorialContentMigration20261111($db);
         return;
     }
 
@@ -203,6 +204,119 @@ HTML,
             if ($tagId > 0) {
                 $attachTag->execute([':article_id' => $articleId, ':tag_id' => $tagId]);
             }
+        }
+    }
+
+    $completeStmt = $db->prepare(
+        "INSERT INTO settings (setting_key, setting_value) VALUES (:key, 'complete')
+         ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)"
+    );
+    $completeStmt->execute([':key' => $migrationKey]);
+    runEditorialContentMigration20261111($db);
+}
+
+function runEditorialContentMigration20261111(PDO $db): void {
+    $migrationKey = 'content_migration_20261111_alwi_as';
+
+    $statusStmt = $db->prepare('SELECT setting_value FROM settings WHERE setting_key = :key LIMIT 1');
+    $statusStmt->execute([':key' => $migrationKey]);
+    if ($statusStmt->fetchColumn() === 'complete') {
+        return;
+    }
+
+    $authorStmt = $db->query(
+        "SELECT id FROM users ORDER BY CASE role WHEN 'admin' THEN 0 WHEN 'editor' THEN 1 ELSE 2 END, id LIMIT 1"
+    );
+    $authorId = (int)$authorStmt->fetchColumn();
+    if ($authorId < 1) {
+        throw new RuntimeException('Editorial migration requires at least one user');
+    }
+
+    $categoryStmt = $db->prepare('SELECT id FROM categories WHERE slug = :slug LIMIT 1');
+    $categoryStmt->execute([':slug' => 'kegiatan-sosial']);
+    $categoryId = $categoryStmt->fetchColumn();
+
+    $article = [
+        'title' => 'KBB Sadunia Turut Berduka atas Wafatnya Bapak Alwi A.S., Tokoh Pers Kaltim',
+        'slug' => 'kbb-sadunia-berduka-wafatnya-alwi-as-tokoh-pers-kaltim',
+        'excerpt' => 'Keluarga besar dan Pengurus Pusat KBB Sadunia menyampaikan duka cita atas wafatnya Bapak Alwi A.S., tokoh pers Kalimantan Timur dan mantan pimpinan Mimbar Masyarakat.',
+        'content' => <<<'HTML'
+<p>Keluarga besar dan Pengurus Pusat Kerukunan Bubuhan Banjar (KBB) Sadunia menyampaikan duka cita yang mendalam atas wafatnya <strong>Bapak Alwi A.S.</strong>, tokoh pers Kalimantan Timur dan mantan pimpinan surat kabar <em>Mimbar Masyarakat</em>.</p>
+<p>Almarhum, yang juga dikenal sebagai Sayid Alwi bin Gholib Alaydrus, berpulang di RSUD Abdul Wahab Sjahranie, Samarinda, pada Selasa malam, 10 November 2026, pukul 23.36 WITA. Kepergiannya menjadi kehilangan besar bagi keluarga, kerabat, dan insan pers di Kalimantan Timur.</p>
+<h2>Jejak panjang dalam dunia pers</h2>
+<p>Bapak Alwi A.S. dikenal sebagai salah satu figur yang ikut membangun fondasi pers di Kalimantan Timur sejak dekade 1970-an. Melalui Mimbar Masyarakat, ia menjadi pemimpin dan tempat belajar bagi wartawan lintas generasi. Media tersebut juga tercatat sebagai tempat Dahlan Iskan memulai pengalaman jurnalistiknya di Samarinda.</p>
+<p>Selain berkarya sebagai wartawan dan pengelola media, almarhum pernah mengemban amanah sebagai anggota DPRD Kalimantan Timur, aktif di Majelis Ulama Indonesia, serta terlibat dalam pengelolaan Islamic Center Kalimantan Timur. Dedikasi panjangnya memperoleh Lifetime Appreciation Award dalam Wartawan Legend Award 2023.</p>
+<h2>Doa keluarga besar KBB Sadunia</h2>
+<p>Ketua Umum PP KBB Sadunia H. Sahbirin Noor dan Sekretaris Umum H. Taufik Arbain, bersama seluruh keluarga besar KBB Sadunia, mendoakan semoga Allah SWT menerima seluruh amal ibadah almarhum, melapangkan kuburnya, menempatkannya di tempat terbaik di sisi-Nya, serta memberikan ketabahan dan kekuatan kepada keluarga yang ditinggalkan.</p>
+<p><em>Inna lillahi wa inna ilaihi raji'un.</em></p>
+<p><strong>Catatan redaksi:</strong> poster duka diterima langsung dari pengelola KBB Sadunia. Informasi riwayat dan waktu wafat dirangkum dari <a href="https://mediakaltim.com/tokoh-pers-senior-kaltim-alwi-as-meninggal-dunia-pernah-jadi-atasan-dahlan-iskan/" target="_blank" rel="noopener noreferrer">Media Kaltim</a> dan <a href="https://nomorsatukaltim.disway.id/utama/read/82403/berduka-pers-kaltim-kehilangan-guru-dan-begawan-media-sayid-alwi-alaydrus" target="_blank" rel="noopener noreferrer">Nomor Satu Kaltim</a>.</p>
+HTML,
+        'image_url' => '/article_images/curated-202611/duka-alwi-as-kbb.jpg',
+        'image_caption' => 'Poster duka cita Keluarga Besar dan Pengurus Pusat KBB Sadunia atas wafatnya Bapak Alwi A.S., tokoh pers Kalimantan Timur.',
+        'image_credit' => 'Dokumentasi PP KBB Sadunia',
+        'category_id' => $categoryId ?: null,
+        'author_id' => $authorId,
+        'read_time' => '3 menit',
+        'source_name' => 'Media Kaltim / Dokumentasi PP KBB Sadunia',
+        'source_url' => 'https://mediakaltim.com/tokoh-pers-senior-kaltim-alwi-as-meninggal-dunia-pernah-jadi-atasan-dahlan-iskan/',
+        'editor_note' => 'Poster dikirim langsung oleh pengelola; riwayat dan waktu wafat diverifikasi dari dua sumber berita Kaltim.',
+        'meta_title' => 'KBB Sadunia Berduka atas Wafatnya Alwi A.S., Tokoh Pers Kaltim',
+        'meta_description' => 'KBB Sadunia menyampaikan duka cita atas wafatnya Alwi A.S., tokoh pers Kaltim dan mantan pimpinan Mimbar Masyarakat.',
+        'published_at' => '2026-11-11 15:15:00',
+        'tags' => ['KBB Sadunia', 'Duka Cita', 'Alwi AS', 'Pers Kaltim', 'Samarinda'],
+    ];
+
+    $insertArticle = $db->prepare(
+        'INSERT INTO articles
+            (title, slug, excerpt, content, image_url, image_caption, image_credit, video_url,
+             category_id, author_id, status, featured, read_time, source_name, source_url,
+             editor_note, meta_title, meta_description, published_at)
+         SELECT
+            :title, :slug, :excerpt, :content, :image_url, :image_caption, :image_credit, \'\',
+            :category_id, :author_id, \'published\', 0, :read_time, :source_name, :source_url,
+            :editor_note, :meta_title, :meta_description, :published_at
+         WHERE NOT EXISTS (SELECT 1 FROM articles WHERE slug = :check_slug)'
+    );
+    $insertArticle->execute([
+        ':title' => $article['title'],
+        ':slug' => $article['slug'],
+        ':excerpt' => $article['excerpt'],
+        ':content' => $article['content'],
+        ':image_url' => $article['image_url'],
+        ':image_caption' => $article['image_caption'],
+        ':image_credit' => $article['image_credit'],
+        ':category_id' => $article['category_id'],
+        ':author_id' => $article['author_id'],
+        ':read_time' => $article['read_time'],
+        ':source_name' => $article['source_name'],
+        ':source_url' => $article['source_url'],
+        ':editor_note' => $article['editor_note'],
+        ':meta_title' => $article['meta_title'],
+        ':meta_description' => $article['meta_description'],
+        ':published_at' => $article['published_at'],
+        ':check_slug' => $article['slug'],
+    ]);
+
+    $articleIdStmt = $db->prepare('SELECT id FROM articles WHERE slug = :slug LIMIT 1');
+    $articleIdStmt->execute([':slug' => $article['slug']]);
+    $articleId = (int)$articleIdStmt->fetchColumn();
+    if ($articleId < 1) {
+        throw new RuntimeException('Failed to resolve editorial article: ' . $article['slug']);
+    }
+
+    $upsertTag = $db->prepare(
+        'INSERT INTO tags (name, slug) VALUES (:name, :slug)
+         ON DUPLICATE KEY UPDATE name = VALUES(name)'
+    );
+    $tagIdStmt = $db->prepare('SELECT id FROM tags WHERE slug = :slug LIMIT 1');
+    $attachTag = $db->prepare('INSERT IGNORE INTO article_tags (article_id, tag_id) VALUES (:article_id, :tag_id)');
+    foreach ($article['tags'] as $tagName) {
+        $tagSlug = strtolower(trim((string)preg_replace('/[^a-z0-9]+/i', '-', $tagName), '-'));
+        $upsertTag->execute([':name' => $tagName, ':slug' => $tagSlug]);
+        $tagIdStmt->execute([':slug' => $tagSlug]);
+        $tagId = (int)$tagIdStmt->fetchColumn();
+        if ($tagId > 0) {
+            $attachTag->execute([':article_id' => $articleId, ':tag_id' => $tagId]);
         }
     }
 
