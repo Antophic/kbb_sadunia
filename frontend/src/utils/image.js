@@ -28,10 +28,11 @@ export function getModernImageUrl(url) {
   const normalized = getImageUrl(url);
   if (!normalized || normalized.startsWith('http') || normalized.startsWith('data:')) return '';
   if (normalized.startsWith('/uploads/')) return '';
-  // These files are mirrored exactly from the InfinityFree reference site.
-  // JPG entries do not have generated WebP siblings, so requesting one would
-  // trigger the article placeholder instead of the real news photo.
-  if (normalized.startsWith('/article_images/infinity-reference-20261018/')) return '';
+  // Static article images are deployed in their original format. They do not
+  // have generated WebP siblings, so advertising a derived `.webp` URL makes
+  // the browser select a missing file and the component falls back to the
+  // placeholder instead of displaying the real article image.
+  if (normalized.startsWith('/article_images/')) return '';
   if (/\.(webp|avif|svg)$/i.test(normalized)) return '';
   if (!/\.(jpe?g|png)$/i.test(normalized)) return '';
   return normalized.replace(/\.(jpe?g|png)$/i, '.webp');
