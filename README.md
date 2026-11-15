@@ -57,6 +57,14 @@ Nilai `HOSTINGER_FTP_PATH` biasanya `/public_html/` atau path domain yang ditamp
 
 Migrasi database awal dan pembuatan file `.env` server tetap dilakukan satu kali melalui hPanel. Lihat `HOSTINGER_READY_CHECKLIST.md`.
 
+## Identitas portal dan pencarian
+
+Alamat utama portal adalah [kbbsadunia.com](https://kbbsadunia.com/). Alamat `www` dialihkan ke domain tersebut. Beranda mengirimkan nama **KBB Sadunia** (nama alternatif **KBBSadunia**), identitas organisasi, dan tautan berita terbit dalam HTML sebelum JavaScript dimuat. Ikon tab dan ikon ponsel memakai perisai dari logo resmi; untuk membuat ulang berkasnya, jalankan `php scripts/build_favicons.php` dari akar repositori dengan ekstensi GD.
+
+[Sitemap XML](https://kbbsadunia.com/sitemap.xml) diperbarui dari basis data dan tercantum dalam [robots.txt](https://kbbsadunia.com/robots.txt). Setelah memverifikasi properti domain di [Google Search Console](https://search.google.com/search-console/), kirim `sitemap.xml`, lalu gunakan **Inspeksi URL → Minta pengindeksan** untuk beranda. Pantau kueri `kbbsadunia` pada laporan Performa. Perayapan dan posisi pencarian ditentukan mesin pencari.
+
+Untuk Bing dan mesin lain yang mendukung [IndexNow](https://www.indexnow.org/documentation), kirim hanya URL publik yang berubah ke endpoint IndexNow setelah deployment. Berkas bukti host di `frontend/public/22e386036b794aa29c82a6ec75e9e292.txt` memang harus tersedia untuk umum; ini bukan kredensial pengelola.
+
 ## Keamanan
 
 Portal menggunakan pertahanan berlapis dan tidak hanya bergantung pada frontend:

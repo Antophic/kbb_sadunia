@@ -1,4 +1,5 @@
 let titleObserver = null;
+let titleTimers = [];
 
 export function setSingleDocumentTitle(title) {
   if (typeof document === "undefined" || !title) return;
@@ -30,6 +31,7 @@ export function setSingleDocumentTitle(title) {
     if (titleObserver) {
       titleObserver.disconnect();
     }
+    titleTimers.forEach((timer) => window.clearTimeout(timer));
 
     titleObserver = new MutationObserver(applyTitle);
     titleObserver.observe(document.head, {
@@ -37,15 +39,13 @@ export function setSingleDocumentTitle(title) {
       subtree: false,
     });
 
-    window.setTimeout(applyTitle, 0);
-    window.setTimeout(applyTitle, 150);
-    window.setTimeout(applyTitle, 600);
-    window.setTimeout(() => {
+    titleTimers = [0, 150, 600].map((delay) => window.setTimeout(applyTitle, delay));
+    titleTimers.push(window.setTimeout(() => {
       if (titleObserver) {
         titleObserver.disconnect();
         titleObserver = null;
       }
       applyTitle();
-    }, 3000);
+    }, 3000));
   }
 }

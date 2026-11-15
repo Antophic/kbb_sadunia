@@ -8,6 +8,7 @@ import { ChevronRight, PenLine, Sparkles, Tag, Clock3 } from "lucide-react";
 import { getImageUrl } from "../utils/image";
 import { isOpinionArticle } from "../utils/articleType";
 import { setSingleDocumentTitle } from "../utils/pageTitle";
+import { PUBLIC_ROBOTS, setPageSummary } from "../utils/siteIdentity";
 import {
   buildArticleBrief,
   buildTopicChips,
@@ -119,10 +120,15 @@ export default function ArticleDetailPage() {
   }, [slug]);
 
   useEffect(() => {
-    if (article?.title) {
-      setSingleDocumentTitle(`${article.title} - KBB Sadunia`);
+    if (article?.title && article.slug === slug) {
+      const title = `${article.title} - KBB Sadunia`;
+      setSingleDocumentTitle(title);
+      const image = article.image_url ? getImageUrl(article.image_url) : "/logo-kbb.png";
+      const absoluteImage = /^https?:\/\//i.test(image) ? image : window.location.origin + "/" + image.replace(/^\/+/, "");
+      setPageSummary(title, article.excerpt || "", absoluteImage, "article");
+      document.querySelector('meta[name="robots"]').content = article.status === "published" ? PUBLIC_ROBOTS : "noindex, follow";
     }
-  }, [article?.title]);
+  }, [article, slug]);
 
   if (loading) {
     return (
@@ -293,11 +299,6 @@ export default function ArticleDetailPage() {
     <div className="min-h-screen bg-white transition-colors duration-200">
       <div className="fixed top-0 left-0 h-1 bg-primary-600 z-[60] transition-[width] duration-150" style={{ width: `${readingProgress}%` }} aria-hidden="true" />
       <Helmet>
-        <meta name="description" content={article.excerpt} />
-        <meta property="og:title" content={article.title} />
-        <meta property="og:description" content={article.excerpt} />
-        {article.image_url && <meta property="og:image" content={window.location.origin + getImageUrl(article.image_url)} />}
-        <meta property="og:type" content="article" />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",

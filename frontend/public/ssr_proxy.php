@@ -1,10 +1,7 @@
 <?php
 /**
- * SSR Proxy (SEO Meta Tags Injector)
- * Skrip ini dipanggil oleh .htaccess sebagai fallback untuk SPA React.
- * Tujuannya untuk menyuntikkan OG Tags (gambar, judul, deskripsi) secara dinamis
- * berdasarkan slug artikel, sehingga jika URL dibagikan ke WhatsApp/Facebook,
- * preview gambar akan muncul dengan benar.
+ * HTML awal untuk pengunjung dan perayap. React mengambil alih setelah dimuat.
+ * Beranda memuat berita terbit; detail artikel membawa judul, ringkasan, dan metadata sendiri.
  */
 
 $request_uri = $_SERVER['REQUEST_URI'] ?? '/';
@@ -39,81 +36,107 @@ function configured_origin() {
     return 'https://kbbsadunia.com';
 }
 
-function replace_meta_tag($html, $pattern, $replacement) {
-    return preg_replace_callback($pattern, static function () use ($replacement) {
-        return $replacement;
-    }, $html, 1);
+function esc($value): string {
+    return htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+// Replace attributes by name, even when the build changes spacing or the closing slash.
+function set_meta(string $html, string $attribute, string $key, string $value): string {
+    $pattern = '~<meta\s+' . $attribute . '="' . preg_quote($key, '~') . '"\s+content="[^"]*"\s*/?>~i';
+    return preg_replace_callback($pattern, static fn() => '<meta ' . $attribute . '="' . $key . '" content="' . esc($value) . '" />', $html, 1);
+}
+
+define('KBB_HTML_PAGE', true);
 $origin = configured_origin();
-$requestPath = parse_url($request_uri, PHP_URL_PATH) ?: '/';
-if ($requestPath[0] !== '/' || preg_match('/[\x00-\x1F\x7F]/', $requestPath)) $requestPath = '/';
-$canonicalUrl = htmlspecialchars($origin . $requestPath, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-$defaultImage = $origin . '/logo-kbb.png';
-
-$html = replace_meta_tag($html, '/<meta property="og:url" content="[^"]*" \/>/', '<meta property="og:url" content="'.$canonicalUrl.'" />');
-$html = replace_meta_tag($html, '/<meta property="og:image" content="[^"]*" \/>/', '<meta property="og:image" content="'.$defaultImage.'" />');
-$html = replace_meta_tag($html, '/<meta name="twitter:image" content="[^"]*" \/>/', '<meta name="twitter:image" content="'.$defaultImage.'" />');
-$html = replace_meta_tag($html, '/<link rel="canonical" href="[^"]*" \/>/', '<link rel="canonical" href="'.$canonicalUrl.'" />');
-
-// Jika BUKAN rute artikel, kembalikan HTML dengan canonical/OG domain aktif.
-if (!preg_match('#^/article/([^/?]+)#', $request_uri, $matches)) {
-    echo $html;
-    exit;
+$path = parse_url($request_uri, PHP_URL_PATH) ?: '/';
+if ($path[0] !== '/' || preg_match('/[\x00-\x1F\x7F]/', $path)) $path = '/';
+$path = rtrim($path, '/') ?: '/';
+$isHome = $path === '/';
+$isArticle = preg_match('~^/(?:article|artikel|berita)/([^/]+)$~D', $path, $match) === 1;
+$canonicalPath = $isArticle ? '/article/' . $match[1] : $path;
+if (($path === '/terkini' || preg_match('~^/(?:kategori|tag)/[^/]+$~D', $path)) &&
+    ($page = filter_var($_GET['page'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 2]]))) {
+    $canonicalPath .= '?page=' . $page;
 }
+$canonical = $origin . $canonicalPath;
+$html = preg_replace_callback('~<link rel="canonical" href="[^"]*"\s*/?>~', static fn() => '<link rel="canonical" href="' . esc($canonical) . '" />', $html, 1);
+$html = set_meta($html, 'property', 'og:url', $canonical);
+if ($isHome) {
+    // index.html already includes the WebSite and publisher for the production domain.
+    if ($origin !== 'https://kbbsadunia.com') {
+        $html = str_replace('https://kbbsadunia.com/', esc($origin) . '/', $html);
+    }
+} else {
+    $html = preg_replace('~<script id="kbb-site-schema" type="application/ld\+json">.*?</script>~s', '', $html, 1);
+}
+$privatePage = preg_match('~^/(?:admin|auth|search|tersimpan)(?:/|$)~', $path);
+if ($privatePage) $html = set_meta($html, 'name', 'robots', 'noindex, follow');
 
-$slug = $matches[1];
-$db_config = __DIR__ . '/config/database.php';
-
-// Cek apakah file config database tersedia (artinya kita ada di environment production/deployed)
-if (file_exists($db_config)) {
+$nav = '<nav aria-label="Navigasi portal"><a href="/">KBB Sadunia</a> · <a href="/terkini">Berita terkini</a> · <a href="/profil">Profil organisasi</a> · <a href="/perpustakaan">Perpustakaan Banjar</a></nav>';
+$body = $isHome ? '<h1>KBB Sadunia</h1><p>Portal resmi Kerukunan Bubuhan Banjar. Ikuti berita Banua, kegiatan bubuhan Banjar di perantauan, dan koleksi perpustakaan digital.</p>' : '';
+$title = $description = null;
+$image = $origin . '/logo-kbb.png';
+$type = 'website';
+$config = __DIR__ . '/config/database.php';
+if (($isHome || $isArticle) && is_file($config)) {
     try {
-        require_once $db_config;
+        require_once $config;
         $db = Database::getInstance()->getConnection();
-        
-        $stmt = $db->prepare("SELECT title, excerpt, image_url FROM articles WHERE slug = ? AND status = 'published'");
-        $stmt->execute([$slug]);
-        $article = $stmt->fetch();
-        
-        if ($article) {
-            $title = htmlspecialchars(trim($article['title']) . " - KBB Sadunia", ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-            // Ambil excerpt atau bersihkan content, batasi max 150 karakter
-            $raw_desc = !empty($article['excerpt']) ? $article['excerpt'] : "Portal berita dan artikel terlengkap seputar Kerukunan Bubuhan Banjar.";
-            $desc = htmlspecialchars(mb_strimwidth(strip_tags($raw_desc), 0, 150, "..."), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-            $image = trim($article['image_url']);
-            
-            // Konversi URL gambar relatif jadi absolut (penting untuk WhatsApp/Facebook crawler)
-            if (strpos($image, 'http') !== 0 && !empty($image)) {
-                $image = $origin . '/' . ltrim($image, '/');
+        if ($isHome) {
+            $stories = $db->query(
+                "SELECT a.slug, a.title FROM articles a LEFT JOIN categories c ON c.id = a.category_id
+                 WHERE a.status = 'published' AND a.published_at <= NOW() AND (c.slug IS NULL OR c.slug <> 'artikel--opini')
+                 ORDER BY a.published_at DESC, a.id DESC LIMIT 6"
+            )->fetchAll();
+            if ($stories) {
+                $body .= '<h2>Berita terkini</h2><ul>';
+                foreach ($stories as $story) {
+                    $body .= '<li><a href="/article/' . rawurlencode($story['slug']) . '">' . esc($story['title']) . '</a></li>';
+                }
+                $body .= '</ul>';
             }
-            $imageParts = parse_url($image);
-            if (!$imageParts || !in_array(strtolower($imageParts['scheme'] ?? ''), ['http', 'https'], true)) {
-                $image = $defaultImage;
-            }
-            $image = htmlspecialchars($image, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-
-            // Ganti title meta
-            $html = replace_meta_tag($html, '/<title>.*?<\/title>/s', "<title>$title</title>");
-            
-            // Ganti Open Graph (OG) tags
-            $html = replace_meta_tag($html, '/<meta property="og:title" content="[^"]*" \/>/', '<meta property="og:title" content="'.$title.'" />');
-            $html = replace_meta_tag($html, '/<meta property="og:description" content="[^"]*" \/>/', '<meta property="og:description" content="'.$desc.'" />');
-            
-            // Ganti Twitter tags
-            $html = replace_meta_tag($html, '/<meta name="twitter:title" content="[^"]*" \/>/', '<meta name="twitter:title" content="'.$title.'" />');
-            $html = replace_meta_tag($html, '/<meta name="twitter:description" content="[^"]*" \/>/', '<meta name="twitter:description" content="'.$desc.'" />');
-
-            // Ganti image tags jika gambar ada
-            if (!empty($image)) {
-                $html = replace_meta_tag($html, '/<meta property="og:image" content="[^"]*" \/>/', '<meta property="og:image" content="'.$image.'" />');
-                $html = replace_meta_tag($html, '/<meta name="twitter:image" content="[^"]*" \/>/', '<meta name="twitter:image" content="'.$image.'" />');
+        } else {
+            $stmt = $db->prepare("SELECT title, excerpt, image_url FROM articles
+                                  WHERE slug = ? AND status = 'published' AND published_at <= NOW() LIMIT 1");
+            $stmt->execute([rawurldecode($match[1])]);
+            $article = $stmt->fetch();
+            if ($article) {
+                $type = 'article';
+                $title = trim($article['title']) . ' - KBB Sadunia';
+                $description = trim(html_entity_decode(strip_tags((string)$article['excerpt']), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+                $body = '<article><h1>' . esc($article['title']) . '</h1><p>' . esc($description) . '</p></article>';
+                $src = trim((string)$article['image_url']);
+                if ($src !== '') {
+                    $candidate = preg_match('~^https?://~i', $src) ? $src : $origin . '/' . ltrim($src, '/');
+                    if (filter_var($candidate, FILTER_VALIDATE_URL)) $image = $candidate;
+                }
+            } else {
+                http_response_code(404);
+                $title = 'Artikel tidak ditemukan - KBB Sadunia';
+                $body = '<h1>Artikel tidak ditemukan</h1>';
+                $html = set_meta($html, 'name', 'robots', 'noindex, follow');
             }
         }
-    } catch (Throwable $e) {
-        // Jika gagal koneksi DB atau query (misal belum di-setup), biarkan HTML apa adanya
-        error_log("SSR Proxy Error: " . $e->getMessage());
+    } catch (Throwable $error) {
+        // A temporary outage is not a removal; ask crawlers to try again.
+        http_response_code(503);
+        header('Retry-After: 300');
+        error_log('KBB HTML: unable to load published news');
     }
 }
-
-// Keluarkan HTML yang sudah di-inject (atau HTML asli jika tidak ada artikel)
-echo $html;
+if ($title !== null) {
+    $html = preg_replace_callback('~<title>.*?</title>~s', static fn() => '<title>' . esc($title) . '</title>', $html, 1);
+    $html = set_meta($html, 'property', 'og:title', $title);
+    $html = set_meta($html, 'name', 'twitter:title', $title);
+}
+if ($description !== null) {
+    $html = set_meta($html, 'name', 'description', $description);
+    $html = set_meta($html, 'property', 'og:description', $description);
+    $html = set_meta($html, 'name', 'twitter:description', $description);
+}
+$html = set_meta($html, 'property', 'og:type', $type);
+$html = set_meta($html, 'property', 'og:image', $image);
+$html = set_meta($html, 'name', 'twitter:image', $image);
+$initial = $body !== '' ? '<main class="kbb-first-read">' . $body . $nav . '</main>' : '<noscript>' . $nav . '</noscript>';
+header('Content-Type: text/html; charset=utf-8');
+echo str_replace('<div id="root"></div>', '<div id="root">' . $initial . '</div>', $html);

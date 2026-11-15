@@ -3,7 +3,7 @@ import ArticleCard from "../components/ArticleCard";
 import { Link } from "react-router-dom";
 import { apiGetArticles, apiGetTrending } from "../services/api";
 import { EXCLUDE_TENTANG_PARAMS } from "../utils/tentangCategories";
-import { Helmet } from "react-helmet-async";
+import { HOME_TITLE } from "../utils/siteIdentity";
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { ChevronRight, TrendingUp } from "lucide-react";
@@ -65,10 +65,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white pb-12 transition-colors duration-200">
-      <Helmet>
-        <meta name="description" content="Portal berita terlengkap dan terpercaya." />
-      </Helmet>
-      <h1 className="sr-only">KBB Sadunia - Portal Berita Bubuhan Banjar Sadunia</h1>
+      <h1 className="sr-only">{HOME_TITLE}</h1>
       
       {/* Breaking News Ticker */}
       {breaking && (

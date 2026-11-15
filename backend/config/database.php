@@ -29,37 +29,34 @@ function loadEnv($path) {
 // Load environment variables
 loadEnv(__DIR__ . '/../.env');
 
+// HTML pages can still show their masthead and navigation if the database is offline.
+function failDatabaseSetup(string $message, string $log): void {
+    error_log($log);
+    if (defined('KBB_HTML_PAGE') && KBB_HTML_PAGE) throw new RuntimeException($message);
+    http_response_code(500);
+    echo json_encode(['error' => $message]);
+    exit;
+}
+
 // Validasi: credentials HARUS di-set via .env (tidak ada fallback default)
 $requiredEnvVars = ['DB_HOST', 'DB_NAME', 'DB_USER', 'API_SECRET_KEY'];
 foreach ($requiredEnvVars as $var) {
     $val = $_ENV[$var] ?? null;
     if (!$val) {
-        http_response_code(500);
-        error_log("[CRITICAL] Missing env variable: $var — file .env tidak ditemukan atau variabel belum diisi");
-        echo json_encode(['error' => 'Server configuration error']);
-        exit;
+        failDatabaseSetup('Server configuration error', "[CRITICAL] Missing env variable: $var");
     }
     if ($var === 'API_SECRET_KEY' && strlen($val) < 32) {
-        http_response_code(500);
-        error_log("[CRITICAL] API_SECRET_KEY terlalu pendek: " . strlen($val) . " karakter");
-        echo json_encode(['error' => 'Server configuration error']);
-        exit;
+        failDatabaseSetup('Server configuration error', '[CRITICAL] API_SECRET_KEY terlalu pendek');
     }
     if (strpos($val, 'GANTI_') === 0 || strpos($val, 'CHANGE_') === 0) {
-        http_response_code(500);
-        error_log("[CRITICAL] Variabel $var masih menggunakan placeholder");
-        echo json_encode(['error' => 'Server configuration error']);
-        exit;
+        failDatabaseSetup('Server configuration error', "[CRITICAL] Variabel $var masih menggunakan placeholder");
     }
 }
 
 foreach ($_ENV as $var => $val) {
     if (!is_string($val)) continue;
     if (strpos($val, 'GANTI_') === 0 || strpos($val, 'CHANGE_') === 0 || stripos($val, 'GANTI-DOMAIN') !== false) {
-        http_response_code(500);
-        error_log("[CRITICAL] Variabel $var masih menggunakan placeholder");
-        echo json_encode(['error' => 'Server configuration error']);
-        exit;
+        failDatabaseSetup('Server configuration error', "[CRITICAL] Variabel $var masih menggunakan placeholder");
     }
 }
 
@@ -85,10 +82,7 @@ class Database {
             // Set MySQL connection timezone to Indonesia/Jakarta
             $this->pdo->exec("SET time_zone = '+07:00'");
         } catch (PDOException $e) {
-            error_log("[DB_ERROR] Connection failed: " . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['error' => 'Database connection failed']);
-            exit;
+            failDatabaseSetup('Database connection failed', "[DB_ERROR] Connection failed: " . $e->getMessage());
         }
     }
 

@@ -8,7 +8,11 @@ Dokumen ini adalah acuan alur aplikasi `kbbsadunia.com`. Diagram disusun dari ro
 
 ```mermaid
 flowchart LR
-    visitor[Pengunjung] -->|HTTPS| web[React SPA]
+    visitor[Pengunjung] -->|HTTPS| html[HTML awal di Hostinger]
+    crawler[Mesin pencari] -->|robots.txt dan sitemap.xml| api
+    crawler --> html
+    html -->|Beranda dan detail berita terbit| db
+    html -->|JavaScript dimuat| web[React SPA]
     staff[Admin, editor, atau author] -->|HTTPS| web
     web -->|JSON lewat /api| api[PHP API]
 

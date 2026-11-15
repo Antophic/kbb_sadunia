@@ -101,6 +101,16 @@ body {
   word-break: normal; /* CRITICAL: do not break normal words! */
   max-width: 100%;
 }
+.kbb-first-read {
+  max-width: 65rem;
+  margin: 2.5rem auto;
+  padding: 0 1.25rem;
+  color: var(--color-surface-900);
+}
+.kbb-first-read h1 { font-size: 2rem; font-weight: 800; color: var(--color-primary-800); }
+.kbb-first-read h2 { font-size: 1.25rem; font-weight: 700; margin-top: 1.5rem; }
+.kbb-first-read li, .kbb-first-read p, .kbb-first-read nav { margin-top: 0.65rem; }
+.kbb-first-read a { color: var(--color-primary-800); text-decoration: underline; }
 .prose-article h2 {
   font-family: var(--font-sans);
   font-size: 1.75rem;

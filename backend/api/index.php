@@ -476,6 +476,8 @@ validateCSRFToken();
 // ============================================
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $method = $_SERVER['REQUEST_METHOD'];
+if ($method === 'HEAD' && in_array($uri, ['/robots.txt', '/sitemap.xml', '/rss.xml'], true)) $method = 'GET';
+if (str_starts_with($uri, '/api/')) header('X-Robots-Tag: noindex');
 
 // Simple Router
 $routes = [
@@ -1979,8 +1981,8 @@ function getSitemapXml() {
     
     $stmt = $db->query("SELECT slug, updated_at FROM articles WHERE status = 'published' AND published_at IS NOT NULL AND published_at <= NOW() ORDER BY updated_at DESC");
     $articles = $stmt->fetchAll();
-    $categories = $db->query("SELECT slug FROM categories ORDER BY slug")->fetchAll();
-    $tags = $db->query("SELECT t.slug FROM tags t INNER JOIN article_tags at2 ON t.id = at2.tag_id INNER JOIN articles a ON at2.article_id = a.id WHERE a.status = 'published' GROUP BY t.id ORDER BY t.slug")->fetchAll();
+    $categories = $db->query("SELECT DISTINCT c.slug FROM categories c JOIN articles a ON a.category_id = c.id WHERE a.status = 'published' AND a.published_at <= NOW() ORDER BY c.slug")->fetchAll();
+    $tags = $db->query("SELECT DISTINCT t.slug FROM tags t JOIN article_tags at2 ON t.id = at2.tag_id JOIN articles a ON at2.article_id = a.id WHERE a.status = 'published' AND a.published_at <= NOW() ORDER BY t.slug")->fetchAll();
     
     echo '<?xml version="1.0" encoding="UTF-8"?>';
     echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
@@ -1988,7 +1990,8 @@ function getSitemapXml() {
     echo "<url><loc>$baseUrl/</loc><priority>1.0</priority></url>";
     echo "<url><loc>$baseUrl/terkini</loc><priority>0.9</priority></url>";
     echo "<url><loc>$baseUrl/perpustakaan</loc><priority>0.7</priority></url>";
-    echo "<url><loc>$baseUrl/search</loc><priority>0.4</priority></url>";
+    echo "<url><loc>$baseUrl/profil</loc></url>";
+    echo "<url><loc>$baseUrl/kontak</loc></url>";
     echo "<url><loc>$baseUrl/tentang/sejarah</loc><priority>0.6</priority></url>";
     echo "<url><loc>$baseUrl/tentang/susunan-pengurus</loc><priority>0.5</priority></url>";
     echo "<url><loc>$baseUrl/tentang/pelantikan</loc><priority>0.6</priority></url>";
@@ -1996,15 +1999,15 @@ function getSitemapXml() {
     echo "<url><loc>$baseUrl/tentang/kegiatan</loc><priority>0.5</priority></url>";
     echo "<url><loc>$baseUrl/tentang/administrasi</loc><priority>0.5</priority></url>";
     foreach ($categories as $category) {
-        echo "<url><loc>$baseUrl/kategori/{$category['slug']}</loc><priority>0.7</priority></url>";
+        echo "<url><loc>$baseUrl/kategori/" . rawurlencode($category['slug']) . "</loc><priority>0.7</priority></url>";
     }
     foreach ($tags as $tag) {
-        echo "<url><loc>$baseUrl/tag/{$tag['slug']}</loc><priority>0.5</priority></url>";
+        echo "<url><loc>$baseUrl/tag/" . rawurlencode($tag['slug']) . "</loc><priority>0.5</priority></url>";
     }
     
     foreach ($articles as $a) {
         $date = date('Y-m-d', strtotime($a['updated_at']));
-        echo "<url><loc>$baseUrl/article/{$a['slug']}</loc><lastmod>$date</lastmod><priority>0.8</priority></url>";
+        echo "<url><loc>$baseUrl/article/" . rawurlencode($a['slug']) . "</loc><lastmod>$date</lastmod><priority>0.8</priority></url>";
     }
     echo '</urlset>';
 }
@@ -2018,6 +2021,12 @@ function getRobotsTxt() {
     echo "Disallow: /auth\n";
     echo "Disallow: /admin\n";
     echo "Disallow: /api/\n";
+    // Rendering resources for public pages; the API still enforces its normal permissions.
+    foreach (['/api/articles$', '/api/articles?', '/api/articles/slug/', '/api/articles/*/related$',
+              '/api/articles/*/comments$', '/api/categories$', '/api/trending$', '/api/tags$',
+              '/api/books$', '/api/books?', '/api/sitemap$'] as $resource) {
+        echo "Allow: $resource\n";
+    }
     echo "\n";
     echo "Sitemap: $baseUrl/sitemap.xml\n";
 }

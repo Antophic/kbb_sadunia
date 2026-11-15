@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { setSingleDocumentTitle } from "../utils/pageTitle";
+import { HOME_TITLE, HOME_DESCRIPTION, PUBLIC_ROBOTS, SITE_ORIGIN, setPageSummary, siteSchema } from "../utils/siteIdentity";
 
 const titles = {
-  "/": "KBB Sadunia - Portal Berita Kerukunan Bubuhan Banjar Sa dunia",
+  "/": HOME_TITLE,
   "/terkini": "Berita Terkini - KBB Sadunia",
   "/tersimpan": "Baca Nanti - KBB Sadunia",
   "/profil": "Profil Organisasi - KBB Sadunia",
@@ -30,44 +31,38 @@ const titles = {
 const dynamicPrefixes = ["/article/", "/kategori/", "/search"];
 
 export default function PageTitle() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
 
   useEffect(() => {
-    const origin = window.location.origin;
-
-    if (titles[pathname]) {
-      setSingleDocumentTitle(titles[pathname]);
-    } else if (!dynamicPrefixes.some((prefix) => pathname.startsWith(prefix))) {
-      setSingleDocumentTitle("KBB Sadunia - Portal Berita Kerukunan Bubuhan Banjar Sa dunia");
+    const path = pathname.replace(/\/+$/, "") || "/";
+    const isArticle = /^\/(?:article|artikel|berita)\//.test(path);
+    const link = document.querySelector('link[rel="canonical"]');
+    const canonical = new URL(new URL(link?.href || SITE_ORIGIN).origin);
+    canonical.pathname = path.replace(/^\/(?:berita|artikel)\//, "/article/");
+    const page = new URLSearchParams(search).get("page");
+    if (/^\/(?:terkini$|(?:kategori|tag)\/[^/]+$)/.test(path) && /^[1-9]\d*$/.test(page) && Number(page) > 1) {
+      canonical.searchParams.set("page", page);
     }
-
-    let schema = document.getElementById("schema-jsonld");
-    if (!schema) {
+    if (link) link.href = canonical.href;
+    document.querySelector('meta[property="og:url"]').content = canonical.href;
+    if (!isArticle) {
+      const title = titles[path] || HOME_TITLE;
+      if (titles[path] || !dynamicPrefixes.some((prefix) => path.startsWith(prefix))) setSingleDocumentTitle(title);
+      setPageSummary(title, HOME_DESCRIPTION, canonical.origin + "/logo-kbb.png");
+      document.querySelector('meta[name="robots"]').content =
+        /^\/(?:admin|auth|search|tersimpan)(?:\/|$)/.test(path) ? "noindex, follow" : PUBLIC_ROBOTS;
+    }
+    let schema = document.getElementById("kbb-site-schema");
+    if (path !== "/") {
+      schema?.remove();
+    } else if (!schema) {
       schema = document.createElement("script");
-      schema.id = "schema-jsonld";
+      schema.id = "kbb-site-schema";
       schema.type = "application/ld+json";
+      schema.textContent = JSON.stringify(siteSchema(canonical.origin));
       document.head.appendChild(schema);
     }
-
-    schema.textContent = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      name: "KBB Sadunia",
-      url: origin,
-      logo: `${origin}/logo-kbb.png`,
-      description: "Portal resmi KBB Sadunia untuk berita, opini, budaya, dan kegiatan Bubuhan Banjar.",
-      address: {
-        "@type": "PostalAddress",
-        addressRegion: "Kalimantan Selatan",
-        addressCountry: "ID",
-      },
-      sameAs: [
-        "https://facebook.com/kbbsadunia",
-        "https://twitter.com/kbbsadunia",
-        "https://instagram.com/kbbsadunia",
-      ],
-    });
-  }, [pathname]);
+  }, [pathname, search]);
 
   return null;
 }
