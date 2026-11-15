@@ -221,6 +221,7 @@ function runEditorialContentMigration20261111(PDO $db): void {
     $statusStmt = $db->prepare('SELECT setting_value FROM settings WHERE setting_key = :key LIMIT 1');
     $statusStmt->execute([':key' => $migrationKey]);
     if ($statusStmt->fetchColumn() === 'complete') {
+        runEditorialContentMigration20261115($db);
         return;
     }
 
@@ -317,6 +318,201 @@ HTML,
         $tagId = (int)$tagIdStmt->fetchColumn();
         if ($tagId > 0) {
             $attachTag->execute([':article_id' => $articleId, ':tag_id' => $tagId]);
+        }
+    }
+
+    $completeStmt = $db->prepare(
+        "INSERT INTO settings (setting_key, setting_value) VALUES (:key, 'complete')
+         ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)"
+    );
+    $completeStmt->execute([':key' => $migrationKey]);
+    runEditorialContentMigration20261115($db);
+}
+
+function runEditorialContentMigration20261115(PDO $db): void {
+    $migrationKey = 'content_migration_20261115_tablig_milad_sarasehan';
+
+    $statusStmt = $db->prepare('SELECT setting_value FROM settings WHERE setting_key = :key LIMIT 1');
+    $statusStmt->execute([':key' => $migrationKey]);
+    if ($statusStmt->fetchColumn() === 'complete') {
+        return;
+    }
+
+    $authorStmt = $db->query(
+        "SELECT id FROM users ORDER BY CASE role WHEN 'admin' THEN 0 WHEN 'editor' THEN 1 ELSE 2 END, id LIMIT 1"
+    );
+    $authorId = (int)$authorStmt->fetchColumn();
+    if ($authorId < 1) {
+        throw new RuntimeException('Editorial migration requires at least one user');
+    }
+
+    $articles = [
+        [
+            'title' => 'Tablig Akbar Bersama Ustaz Aa Hilman, Warga Banua Berdoa untuk Keselamatan Negeri',
+            'slug' => 'tablig-akbar-aa-hilman-doa-keselamatan-negeri-banjarbaru',
+            'excerpt' => 'Tablig Akbar di Masjid Agung Al-Munawwarah Banjarbaru menghadirkan Ustaz Hilman Fauzi dan mengajak warga Banua memanjatkan doa bagi keselamatan negeri.',
+            'content' => <<<'HTML'
+<p>Tablig Akbar bertajuk <strong>“Penyejuk Hati dan Doa Keselamatan Negeri serta Presiden RI”</strong> digelar di Masjid Agung Al-Munawwarah, Banjarbaru, Sabtu, 14 November 2026. Jamaah memenuhi ruang utama masjid untuk mengikuti kajian dan doa bersama.</p>
+<p>Kegiatan yang diketuai H. Sahbirin Noor atau Paman Birin ini menghadirkan Ustaz Hilman Fauzi, yang dikenal sebagai Aa Hilman. Dalam rangkaian acara juga dijadwalkan lantunan ayat suci Al-Qur'an oleh qari internasional K.H. Muammar Zainal Asyikin serta doa oleh K.H. Muhammad Wildan Salman atau Guru Wildan.</p>
+<h2>Doa untuk persatuan dan keselamatan bangsa</h2>
+<p>Tablig Akbar menjadi ruang bagi warga Banua untuk memohon keselamatan, kedamaian, dan perlindungan bagi Indonesia. Doa juga dipanjatkan untuk kesehatan dan kekuatan Presiden RI Prabowo Subianto dalam mengemban amanah serta untuk kesejahteraan masyarakat.</p>
+<figure>
+  <img src="/article_images/curated-202611/tablig-akbar-aa-hilman-2.jpg" alt="Jamaah memenuhi Masjid Agung Al-Munawwarah pada Tablig Akbar" loading="lazy">
+  <figcaption>Jamaah mengikuti rangkaian Tablig Akbar dan doa keselamatan negeri di Masjid Agung Al-Munawwarah, Banjarbaru.</figcaption>
+</figure>
+<p>Dokumentasi yang diterima redaksi memperlihatkan jamaah dari berbagai usia menyimak kajian dengan khidmat. Kehadiran mereka menegaskan semangat kebersamaan dan kepedulian warga Banua terhadap persatuan bangsa.</p>
+<h2>Sumber pemberitaan</h2>
+<ul>
+  <li><a href="https://klikkalsel.com/tablik-akbar-hadirkan-ustadz-aa-hilman-paman-birin-ajak-warga-banua-doakan-keselamatan-negeri-dan-presiden-prabowo/" target="_blank" rel="noopener noreferrer">KlikKalsel, 12 November 2026</a></li>
+  <li><a href="https://kalimantandigital.com/index.php/2026/11/12/paman-birin-gelar-tablig-akbar-bersama-ustaz-aa-hilman-doa-untuk-presiden-prabowo-dan-keselamatan-negeri/" target="_blank" rel="noopener noreferrer">Kalimantan Digital, 12 November 2026</a></li>
+</ul>
+<p><strong>Catatan redaksi:</strong> naskah dirangkum secara orisinal dari dua sumber pemberitaan dan dilengkapi dokumentasi acara yang dikirim langsung kepada pengelola portal KBB Sadunia.</p>
+HTML,
+            'image_url' => '/article_images/curated-202611/tablig-akbar-aa-hilman-1.jpg',
+            'image_caption' => 'Ustaz Hilman Fauzi menyampaikan kajian dalam Tablig Akbar di Masjid Agung Al-Munawwarah, Banjarbaru.',
+            'image_credit' => 'Dokumentasi KBB Sadunia',
+            'video_url' => '',
+            'category_slug' => 'kegiatan-sosial',
+            'featured' => 1,
+            'read_time' => '3 menit',
+            'source_name' => 'KlikKalsel / Kalimantan Digital',
+            'source_url' => 'https://klikkalsel.com/tablik-akbar-hadirkan-ustadz-aa-hilman-paman-birin-ajak-warga-banua-doakan-keselamatan-negeri-dan-presiden-prabowo/',
+            'editor_note' => 'Ringkasan orisinal dari dua sumber berita dan dua foto dokumentasi asli yang dikirim pengelola.',
+            'meta_title' => 'Tablig Akbar Aa Hilman dan Doa Keselamatan Negeri di Banjarbaru',
+            'meta_description' => 'Tablig Akbar bersama Ustaz Aa Hilman di Banjarbaru mengajak warga Banua berdoa untuk keselamatan negeri dan persatuan bangsa.',
+            'published_at' => '2026-11-15 09:30:00',
+            'tags' => ['KBB Sadunia', 'Tablig Akbar', 'Aa Hilman', 'Banjarbaru', 'Religi'],
+        ],
+        [
+            'title' => 'Milad ke-59 H. Sahbirin Noor, Ucapan Mengalir dari Jaringan KBB Nusantara dan Mancanegara',
+            'slug' => 'milad-ke-59-sahbirin-noor-ucapan-kbb-nusantara-mancanegara',
+            'excerpt' => 'Jaringan Kerukunan Bubuhan Banjar dari Sumatera, Malaysia, hingga Singapura menyampaikan ucapan Milad ke-59 kepada Ketua Umum PP KBB Sadunia H. Sahbirin Noor.',
+            'content' => <<<'HTML'
+<p>Keluarga besar Kerukunan Bubuhan Banjar (KBB) dari berbagai wilayah menyampaikan ucapan <strong>Milad ke-59</strong> kepada Ketua Umum Pengurus Pusat KBB Sadunia, <strong>Dr. (H.C.) H. Sahbirin Noor, S.Sos., M.H.</strong>, pada 12 November 2026.</p>
+<p>Rangkaian ucapan datang dari pengurus KBB di Indonesia dan luar negeri. Setiap poster membawa doa untuk kesehatan, keberkahan, kekuatan dalam mengemban amanah, serta semangat mempererat persaudaraan bubuhan Banjar di mana pun berada.</p>
+<h2>Ucapan PW-KBB Sumatera Utara</h2>
+<blockquote>
+  <p><strong>SELAMAT MILAD KETUA UMUM PP KBB SADUNIA BAPAK H. SAHBIRIN NOOR</strong></p>
+  <p>Keluarga Besar dan Pengurus Wilayah Kerukunan Bubuhan Banjar (PW-KBB) Sumatera Utara menyampaikan ucapan selamat ulang tahun kepada Bapak H. Sahbirin Noor.</p>
+  <p>Semoga senantiasa diberikan kesehatan, keberkahan, serta kekuatan dalam mengemban setiap amanah. 🤲</p>
+</blockquote>
+<h2>Galeri ucapan wilayah</h2>
+<figure>
+  <img src="/article_images/curated-202611/milad-sahbirin-singapura-2026.jpg" alt="Ucapan Milad ke-59 H. Sahbirin Noor dari PWLN KBB Singapura" loading="lazy">
+  <figcaption>Ucapan dari PWLN Kerukunan Bubuhan Banjar Singapura.</figcaption>
+</figure>
+<figure>
+  <img src="/article_images/curated-202611/milad-sahbirin-malaysia-2026.jpg" alt="Ucapan Milad H. Sahbirin Noor dari Pertubuhan Banjar Malaysia" loading="lazy">
+  <figcaption>Ucapan dari Pertubuhan Banjar Malaysia.</figcaption>
+</figure>
+<figure>
+  <img src="/article_images/curated-202611/milad-sahbirin-sumsel-2026.jpg" alt="Ucapan Milad ke-59 H. Sahbirin Noor dari KBB Sumatera Selatan" loading="lazy">
+  <figcaption>Ucapan dari keluarga besar dan Pengurus Wilayah KBB Sumatera Selatan.</figcaption>
+</figure>
+<p>Ucapan dari KBB Sumatera Barat menjadi gambar utama halaman ini. Bersama poster dari Singapura, Malaysia, Sumatera Selatan, dan pesan PW-KBB Sumatera Utara, dokumentasi tersebut menunjukkan luasnya jaringan persaudaraan KBB Sadunia.</p>
+<p><strong>Arsip redaksi:</strong> seluruh poster dan naskah ucapan diterima langsung dari pengelola KBB Sadunia dan ditampilkan sebagai dokumentasi organisasi.</p>
+HTML,
+            'image_url' => '/article_images/curated-202611/milad-sahbirin-sumbar-2026.jpg',
+            'image_caption' => 'Ucapan Selamat Milad kepada H. Sahbirin Noor dari keluarga besar KBB Sumatera Barat.',
+            'image_credit' => 'Dokumentasi KBB Sumatera Barat',
+            'video_url' => '',
+            'category_slug' => 'kegiatan-sosial',
+            'featured' => 0,
+            'read_time' => '3 menit',
+            'source_name' => 'Dokumentasi Pengurus Wilayah KBB',
+            'source_url' => '',
+            'editor_note' => 'Galeri menggunakan empat poster asli yang dikirim pengelola dan teks ucapan PW-KBB Sumatera Utara tanpa mengubah maksudnya.',
+            'meta_title' => 'Milad ke-59 Sahbirin Noor, Ucapan KBB Nusantara dan Mancanegara',
+            'meta_description' => 'Galeri ucapan Milad ke-59 H. Sahbirin Noor dari jaringan KBB di Sumatera, Singapura, dan Malaysia.',
+            'published_at' => '2026-11-15 09:20:00',
+            'tags' => ['KBB Sadunia', 'Sahbirin Noor', 'Milad', 'Diaspora Banjar', 'Galeri'],
+        ],
+        [
+            'title' => 'Saksikan Sarasehan Kebangsaan MPR RI Bersama K.H. Muhammad Mursyid',
+            'slug' => 'video-sarasehan-kebangsaan-mpr-ri-kh-muhammad-mursyid',
+            'excerpt' => 'Siaran ulang Sarasehan Kebangsaan MPR RI bersama K.H. Muhammad Mursyid, M.Pd.I dapat disaksikan langsung melalui pemutar video portal KBB Sadunia.',
+            'content' => <<<'HTML'
+<p>Portal KBB Sadunia menghadirkan dokumentasi video <strong>Sarasehan Kebangsaan MPR RI bersama K.H. Muhammad Mursyid, M.Pd.I.</strong> Video ditayangkan melalui kanal YouTube Marbai Inhil dan dapat disaksikan langsung pada pemutar di halaman ini.</p>
+<p>Sarasehan kebangsaan menjadi ruang untuk memperkuat wawasan kebangsaan, persaudaraan, dan kepedulian terhadap kehidupan bersama. Dokumentasi ini ditempatkan sebagai konten video tersendiri agar tidak tercampur dengan liputan Tablig Akbar Ustaz Aa Hilman yang merupakan kegiatan berbeda.</p>
+<p><strong>Sumber video:</strong> <a href="https://www.youtube.com/live/OOoAHexmokA" target="_blank" rel="noopener noreferrer">Marbai Inhil di YouTube</a>.</p>
+HTML,
+            'image_url' => 'https://i.ytimg.com/vi/OOoAHexmokA/hqdefault.jpg',
+            'image_caption' => 'Cuplikan video Sarasehan Kebangsaan MPR RI bersama K.H. Muhammad Mursyid, M.Pd.I.',
+            'image_credit' => 'YouTube / Marbai Inhil',
+            'video_url' => 'https://www.youtube.com/watch?v=OOoAHexmokA',
+            'category_slug' => 'sosial',
+            'featured' => 0,
+            'read_time' => '1 menit',
+            'source_name' => 'Marbai Inhil',
+            'source_url' => 'https://www.youtube.com/live/OOoAHexmokA',
+            'editor_note' => 'Konten video dipisahkan dari berita Tablig Akbar karena merupakan acara yang berbeda.',
+            'meta_title' => 'Video Sarasehan Kebangsaan MPR RI bersama K.H. Muhammad Mursyid',
+            'meta_description' => 'Saksikan Sarasehan Kebangsaan MPR RI bersama K.H. Muhammad Mursyid melalui pemutar video KBB Sadunia.',
+            'published_at' => '2026-11-15 09:10:00',
+            'tags' => ['KBB Sadunia', 'Sarasehan Kebangsaan', 'MPR RI', 'Muhammad Mursyid', 'Video'],
+        ],
+    ];
+
+    $categoryStmt = $db->prepare('SELECT id FROM categories WHERE slug = :slug LIMIT 1');
+    $insertArticle = $db->prepare(
+        'INSERT INTO articles
+            (title, slug, excerpt, content, image_url, image_caption, image_credit, video_url,
+             category_id, author_id, status, featured, read_time, source_name, source_url,
+             editor_note, meta_title, meta_description, published_at)
+         SELECT
+            :title, :slug, :excerpt, :content, :image_url, :image_caption, :image_credit, :video_url,
+            :category_id, :author_id, \'published\', :featured, :read_time, :source_name, :source_url,
+            :editor_note, :meta_title, :meta_description, :published_at
+         WHERE NOT EXISTS (SELECT 1 FROM articles WHERE slug = :check_slug)'
+    );
+    $articleIdStmt = $db->prepare('SELECT id FROM articles WHERE slug = :slug LIMIT 1');
+    $upsertTag = $db->prepare(
+        'INSERT INTO tags (name, slug) VALUES (:name, :slug)
+         ON DUPLICATE KEY UPDATE name = VALUES(name)'
+    );
+    $tagIdStmt = $db->prepare('SELECT id FROM tags WHERE slug = :slug LIMIT 1');
+    $attachTag = $db->prepare('INSERT IGNORE INTO article_tags (article_id, tag_id) VALUES (:article_id, :tag_id)');
+
+    foreach ($articles as $article) {
+        $categoryStmt->execute([':slug' => $article['category_slug']]);
+        $categoryId = $categoryStmt->fetchColumn();
+
+        $insertArticle->execute([
+            ':title' => $article['title'],
+            ':slug' => $article['slug'],
+            ':excerpt' => $article['excerpt'],
+            ':content' => $article['content'],
+            ':image_url' => $article['image_url'],
+            ':image_caption' => $article['image_caption'],
+            ':image_credit' => $article['image_credit'],
+            ':video_url' => $article['video_url'],
+            ':category_id' => $categoryId ?: null,
+            ':author_id' => $authorId,
+            ':featured' => $article['featured'],
+            ':read_time' => $article['read_time'],
+            ':source_name' => $article['source_name'],
+            ':source_url' => $article['source_url'],
+            ':editor_note' => $article['editor_note'],
+            ':meta_title' => $article['meta_title'],
+            ':meta_description' => $article['meta_description'],
+            ':published_at' => $article['published_at'],
+            ':check_slug' => $article['slug'],
+        ]);
+
+        $articleIdStmt->execute([':slug' => $article['slug']]);
+        $articleId = (int)$articleIdStmt->fetchColumn();
+        if ($articleId < 1) {
+            throw new RuntimeException('Failed to resolve editorial article: ' . $article['slug']);
+        }
+
+        foreach ($article['tags'] as $tagName) {
+            $tagSlug = strtolower(trim((string)preg_replace('/[^a-z0-9]+/i', '-', $tagName), '-'));
+            $upsertTag->execute([':name' => $tagName, ':slug' => $tagSlug]);
+            $tagIdStmt->execute([':slug' => $tagSlug]);
+            $tagId = (int)$tagIdStmt->fetchColumn();
+            if ($tagId > 0) {
+                $attachTag->execute([':article_id' => $articleId, ':tag_id' => $tagId]);
+            }
         }
     }
 
