@@ -23,7 +23,14 @@ foreach ([16, 32, 48, 96, 180] as $size) {
     imagepng($icon);
     $png = ob_get_clean();
     if ($size <= 48) $frames[$size] = $png;
-    if ($size === 96) file_put_contents("$public/favicon-kbb-96.png", $png);
+    if ($size === 96) {
+        file_put_contents("$public/favicon-kbb-96.png", $png);
+        // Old search results still request /favicon.svg. Keep this asset self-contained.
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="96" height="96" viewBox="0 0 96 96">'
+            . '<title>KBB Sadunia</title><image width="96" height="96" xlink:href="data:image/png;base64,'
+            . base64_encode($png) . '"/></svg>' . "\n";
+        file_put_contents("$public/favicon.svg", $svg);
+    }
     if ($size === 180) file_put_contents("$public/apple-touch-icon.png", $png);
 }
 $directory = pack('v3', 0, 1, count($frames));

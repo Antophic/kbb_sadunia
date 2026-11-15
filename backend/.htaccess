@@ -67,6 +67,16 @@
     Header unset Server
 </IfModule>
 
+# These public icon URLs stay the same when the artwork changes.
+<FilesMatch "^(favicon\.(ico|svg)|favicon-kbb-96\.png|apple-touch-icon\.png)$">
+    <IfModule mod_expires.c>
+        ExpiresActive Off
+    </IfModule>
+    <IfModule mod_headers.c>
+        Header set Cache-Control "public, max-age=3600, must-revalidate"
+    </IfModule>
+</FilesMatch>
+
 # === REWRITE RULES ===
 <IfModule mod_rewrite.c>
     RewriteEngine On
@@ -77,7 +87,6 @@
     RewriteRule ^ https://kbbsadunia.com%{REQUEST_URI} [R=301,L]
     RewriteCond %{THE_REQUEST} \s/+index\.html[?\s] [NC]
     RewriteRule ^index\.html$ / [R=301,L]
-    RewriteRule ^favicon\.svg$ /favicon-kbb-96.png [R=301,L]
 
     # Tolak path sensitif sebelum SPA fallback, termasuk saat file belum ada.
     RewriteRule (^|/)\.(env|git)([./]|$) - [F,NC,L]
