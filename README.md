@@ -59,6 +59,10 @@ Migrasi database awal dan pembuatan file `.env` server tetap dilakukan satu kali
 
 ## Identitas portal dan pencarian
 
+Berita yang diterbitkan melalui CMS langsung tersedia di domain utama. Sorotan Utama dimulai dari berita dengan waktu terbit terbaru, diikuti tiga judul berikutnya di Fokus Hari Ini. Penanda pilihan redaksi mengisi rubrik Pilihan Redaksi. Daftar berita diperbarui ketika dibuka, setiap satu menit selama tab terlihat, dan ketika pengunjung kembali atau tersambung lagi. Jika koneksi terputus, daftar terakhir tetap terlihat sampai permintaan berikutnya berhasil.
+
+Empat ringkasan liputan KBB Riau, Langkat, Inhil, dan Banjarbaru (November 2026) dikelola oleh migrasi editorial `content_migration_20261127_kbb_regional_news` di `backend/api/content_migrations.php`. Tiap berita memakai foto dari acara yang sama, kredit foto, dan tautan sumber. Migrasi berdasarkan slug hanya menambah artikel yang belum ada, sehingga permintaan berulang tidak menduplikasi berita.
+
 Alamat utama portal adalah [kbbsadunia.com](https://kbbsadunia.com/). Alamat `www` dialihkan ke domain tersebut. Beranda mengirimkan nama **KBB Sadunia** (nama alternatif **KBBSadunia**), identitas organisasi, dan tautan berita terbit dalam HTML sebelum JavaScript dimuat. Ikon tab dan ikon ponsel memakai perisai dari logo resmi; untuk membuat ulang berkasnya, jalankan `php scripts/build_favicons.php` dari akar repositori dengan ekstensi GD.
 
 Ikon utama untuk pencarian adalah `/favicon-kbb-96.png`. Pertahankan juga `/favicon.svg` dan `/favicon.ico`: peramban dan mesin pencari yang mengenal alamat lama tetap harus mendapat perisai KBB. Setelah mengganti gambar, cek ketiga alamat di domain publik dan bersihkan cache CDN untuk ikon tersebut jika salinan lama masih muncul. Google memperbarui ikonnya sendiri setelah membaca kembali beranda dan berkas ikon.

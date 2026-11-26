@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { apiGetArticles } from "../services/api";
+import { useNewsFeed } from "../hooks/useNewsFeed";
 import OptimizedImage from "../components/OptimizedImage";
 
 const galleryCategorySlugs = new Set([
@@ -14,21 +13,8 @@ function shortCaption(title = "") {
 }
 
 export default function KegiatanKBBPage() {
-  const [photos, setPhotos] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    apiGetArticles("?per_page=80")
-      .then((res) => {
-        const items = (res.data || [])
-          .filter((article) => galleryCategorySlugs.has(article.category_slug))
-          .filter((article) => article.image_url)
-          .slice(0, 18);
-        setPhotos(items);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: articles, loading, error } = useNewsFeed("/articles?per_page=80");
+  const photos = articles.filter(article => galleryCategorySlugs.has(article.category_slug) && article.image_url).slice(0, 18);
 
   return (
     <div className="min-h-screen bg-white">
@@ -79,8 +65,8 @@ export default function KegiatanKBBPage() {
             <div className="icon-container">
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
             </div>
-            <h3>Belum ada publikasi kegiatan</h3>
-            <p>Halaman ini akan diperbarui dengan foto-foto kegiatan KBB Sadunia setelah dokumentasi tersedia.</p>
+            <h3>{error ? "Galeri belum bisa dimuat." : "Belum ada publikasi kegiatan"}</h3>
+            <p>{error ? "Galeri akan mencoba lagi secara otomatis." : "Foto kegiatan KBB Sadunia akan tampil di sini setelah diterbitkan."}</p>
           </div>
         )}
       </div>

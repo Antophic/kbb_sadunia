@@ -2,6 +2,7 @@ import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import ArticleCard from "../components/ArticleCard";
 import { apiGetArticles } from "../services/api";
+import { useNewsFeed } from "../hooks/useNewsFeed";
 import { EXCLUDE_TENTANG_PARAMS } from "../utils/tentangCategories";
 import { Helmet } from "react-helmet-async";
 import { Search } from "lucide-react";
@@ -23,18 +24,18 @@ const INDEX_PER_PAGE = 100;
 const MAX_INDEX_PAGES = 20;
 const quickTopics = ["Silaturahmi", "KBB Sadunia", "Banjar", "Halal Bihalal", "Pelantikan KBB", "Budaya Banjar", "Kegiatan Sosial", "Pendidikan", "Ekonomi"];
 
-async function fetchSearchArticles(searchTerm) {
+async function fetchSearchArticles(searchTerm, options) {
   const encodedQuery = encodeURIComponent(searchTerm.trim());
   const makeParams = (page) => `?page=${page}&per_page=${INDEX_PER_PAGE}&search=${encodedQuery}&${EXCLUDE_TENTANG_PARAMS}`;
-  const firstArticlesRes = await apiGetArticles(makeParams(1));
+  const firstArticlesRes = await apiGetArticles(makeParams(1), options);
   const totalIndexPages = Math.min(Number(firstArticlesRes.meta?.total_pages || 1), MAX_INDEX_PAGES);
   const restPages = totalIndexPages > 1
     ? await Promise.all(
-        Array.from({ length: totalIndexPages - 1 }, (_, index) => apiGetArticles(makeParams(index + 2)))
+        Array.from({ length: totalIndexPages - 1 }, (_, index) => apiGetArticles(makeParams(index + 2), options))
       )
     : [];
 
-  return uniqueArticles([...(firstArticlesRes.data || []), ...restPages.flatMap((res) => res.data || [])]);
+  return { data: uniqueArticles([...firstArticlesRes.data, ...restPages.flatMap(res => res.data)]) };
 }
 
 export default function SearchPage() {
@@ -43,39 +44,13 @@ export default function SearchPage() {
   const query = params.get("q") || "";
   const pageParam = Math.max(1, Number(params.get("page") || 1));
   const [draftQuery, setDraftQuery] = useState(query);
-  const [articles, setArticles] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: articles, loading, error } = useNewsFeed(query.trim(), 60_000, fetchSearchArticles);
   const { categories = [] } = useCategories();
 
   useEffect(() => {
     setSingleDocumentTitle(query ? `Pencarian "${query}" - KBB Sadunia` : "Pencarian - KBB Sadunia");
     const syncQuery = window.setTimeout(() => setDraftQuery(query), 0);
     return () => window.clearTimeout(syncQuery);
-  }, [query]);
-
-  useEffect(() => {
-    let isCurrent = true;
-
-    const fetchData = async () => {
-      setLoading(true);
-      setArticles([]);
-      try {
-        const searchTerm = query.trim();
-        const searchArticles = searchTerm ? await fetchSearchArticles(searchTerm) : [];
-
-        if (!isCurrent) return;
-        setArticles(searchArticles);
-      } catch (err) {
-        console.error("Failed to load search data:", err);
-      } finally {
-        if (isCurrent) setLoading(false);
-      }
-    };
-
-    fetchData();
-    return () => {
-      isCurrent = false;
-    };
   }, [query]);
 
   const visibleCategories = useMemo(() => getAllCategoryList(categories), [categories]);
@@ -152,7 +127,7 @@ export default function SearchPage() {
               <div className="mb-4 text-sm font-semibold text-surface-600">
                 {results.length > 0
                   ? `Ditemukan ${results.length} artikel untuk "${query}"`
-                  : `Tidak ditemukan hasil untuk "${query}"`}
+                  : error ? "Pencarian belum bisa dimuat. Kami akan mencoba lagi secara otomatis." : `Tidak ditemukan hasil untuk "${query}"`}
               </div>
 
               {pageResults.length > 0 ? (

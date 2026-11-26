@@ -335,6 +335,7 @@ function runEditorialContentMigration20261115(PDO $db): void {
     $statusStmt = $db->prepare('SELECT setting_value FROM settings WHERE setting_key = :key LIMIT 1');
     $statusStmt->execute([':key' => $migrationKey]);
     if ($statusStmt->fetchColumn() === 'complete') {
+        runEditorialContentMigration20261127($db);
         return;
     }
 
@@ -505,6 +506,179 @@ HTML,
             throw new RuntimeException('Failed to resolve editorial article: ' . $article['slug']);
         }
 
+        foreach ($article['tags'] as $tagName) {
+            $tagSlug = strtolower(trim((string)preg_replace('/[^a-z0-9]+/i', '-', $tagName), '-'));
+            $upsertTag->execute([':name' => $tagName, ':slug' => $tagSlug]);
+            $tagIdStmt->execute([':slug' => $tagSlug]);
+            $tagId = (int)$tagIdStmt->fetchColumn();
+            if ($tagId > 0) {
+                $attachTag->execute([':article_id' => $articleId, ':tag_id' => $tagId]);
+            }
+        }
+    }
+
+    $completeStmt = $db->prepare(
+        "INSERT INTO settings (setting_key, setting_value) VALUES (:key, 'complete')
+         ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)"
+    );
+    $completeStmt->execute([':key' => $migrationKey]);
+    runEditorialContentMigration20261127($db);
+}
+
+function runEditorialContentMigration20261127(PDO $db): void {
+    $migrationKey = 'content_migration_20261127_kbb_regional_news';
+    $statusStmt = $db->prepare('SELECT setting_value FROM settings WHERE setting_key = :key LIMIT 1');
+    $statusStmt->execute([':key' => $migrationKey]);
+    if ($statusStmt->fetchColumn() === 'complete') {
+        return;
+    }
+
+    $authorId = (int)$db->query(
+        "SELECT id FROM users ORDER BY CASE role WHEN 'admin' THEN 0 WHEN 'editor' THEN 1 ELSE 2 END, id LIMIT 1"
+    )->fetchColumn();
+    if ($authorId < 1) {
+        throw new RuntimeException('Editorial migration requires at least one user');
+    }
+
+    // Original summaries of public reports. Every photo documents the matching event.
+    $articles = [
+        [
+            'title' => 'KBB Riau dan Pemuda Inhil Pererat Silaturahmi di Ponpes Khairul Ummah',
+            'slug' => 'kbb-riau-pemuda-inhil-silaturahmi-ponpes-khairul-ummah',
+            'excerpt' => 'Pengurus KBB di Riau dan Pemuda Inhil bertemu K.H. Muhammad Mursyid di Pondok Pesantren Khairul Ummah, Indragiri Hulu, untuk memperkuat hubungan antargenerasi.',
+            'content' => <<<'HTML'
+<p>Pengurus Kerukunan Bubuhan Banjar (KBB) di Riau bersama Pemuda Indragiri Hilir Rayon Indragiri Hulu dan Kuantan Singingi bersilaturahmi dengan <strong>K.H. Muhammad Mursyid, M.Pd.I.</strong> di Pondok Pesantren Khairul Ummah, Desa Batu Gajah, Kecamatan Pasir Penyu, Indragiri Hulu. Mursyid merupakan anggota DPD RI asal Riau sekaligus Ketua KBB Provinsi Riau.</p>
+<p>Pertemuan tersebut mempertemukan pengurus KBB dan kelompok pemuda dalam suasana kekeluargaan. Menurut laporan Tran7Riau yang terbit pada 24 November 2026, Mursyid mengajak peserta menjaga persaudaraan dan membuka komunikasi untuk kegiatan bersama yang bermanfaat bagi masyarakat.</p>
+<p>Ketua Pemuda Inhil Rayon Inhu–Kuansing, Rieskie Kurniawan, menyampaikan apresiasi atas sambutan yang diterima. Sekretaris KBB Inhu Mansur Sulaiman dan sejumlah anggota kedua kelompok juga hadir. Harapannya, hubungan yang terjalin berlanjut menjadi kerja sama antargenerasi di wilayah Indragiri Hulu dan sekitarnya.</p>
+<p><strong>Sumber:</strong> ringkasan redaksi berdasarkan <a href="https://tran7riau.com/silaturahmi-ke-ponpes-khairul-ummah-pemuda-inhil-temui-anggota-dpd-ri-kh-muhammad-mursyid/" target="_blank" rel="noopener noreferrer">liputan Tran7Riau, 24 November 2026</a>.</p>
+HTML,
+            'image_url' => '/article_images/curated-202611/silaturahmi-kbb-riau-pemuda-inhil-20261124.webp',
+            'image_caption' => 'Foto bersama dalam silaturahmi pengurus KBB dan Pemuda Inhil di Ponpes Khairul Ummah, Indragiri Hulu.',
+            'image_credit' => 'Foto: Tran7Riau',
+            'category_slug' => 'kegiatan-sosial',
+            'read_time' => '2 menit',
+            'source_name' => 'Tran7Riau',
+            'source_url' => 'https://tran7riau.com/silaturahmi-ke-ponpes-khairul-ummah-pemuda-inhil-temui-anggota-dpd-ri-kh-muhammad-mursyid/',
+            'editor_note' => 'Ringkasan orisinal dari liputan Tran7Riau; foto acara dari sumber tersebut.',
+            'published_at' => '2026-11-24 21:40:00',
+            'tags' => ['KBB Riau', 'Pemuda Inhil', 'Muhammad Mursyid', 'Silaturahmi'],
+        ],
+        [
+            'title' => 'Pengurus KBB Langkat Temui Plt Bupati, Bahas Sinergi dan Rencana Pelantikan',
+            'slug' => 'pengurus-kbb-langkat-audiensi-plt-bupati-rencana-pelantikan',
+            'excerpt' => 'Pengurus KBB Langkat beraudiensi dengan Plt Bupati Tiorita Br Surbakti. Pertemuan membahas kerja sama kemasyarakatan dan rencana pelantikan kepengurusan 2026–2031.',
+            'content' => <<<'HTML'
+<p>Pengurus Kerukunan Bubuhan Banjar (KBB) Kabupaten Langkat yang dipimpin ketua terpilih <strong>H. Mansyur</strong> beraudiensi dengan Pelaksana Tugas Bupati Langkat, Tiorita Br Surbakti, pada Kamis, 19 November 2026. Pertemuan berlangsung di kantor bupati sebagai langkah awal membangun komunikasi dengan pemerintah daerah.</p>
+<p>Dalam pertemuan itu, kedua pihak membahas peluang kerja sama di bidang sosial kemasyarakatan dan penguatan persatuan warga. Tiorita menyampaikan harapan agar KBB aktif memberi manfaat bagi masyarakat Langkat serta menjaga hubungan baik dengan berbagai kelompok di daerah.</p>
+<p>Menurut laporan Binjai Langkat Today, pengurus KBB juga membahas rencana pelantikan masa bakti 2026–2031 yang <em>direncanakan</em> pada 17 Desember 2026 di Jentera Malay. Tanggal itu masih merupakan agenda yang disampaikan dalam audiensi, bukan laporan bahwa pelantikan sudah berlangsung.</p>
+<p><strong>Sumber:</strong> ringkasan redaksi berdasarkan <a href="https://www.binjailangkattoday.com/2026/11/plt-bupati-tiorita-ajak-bubuhan-banjar.html" target="_blank" rel="noopener noreferrer">liputan Binjai Langkat Today, 20 November 2026</a>.</p>
+HTML,
+            'image_url' => '/article_images/curated-202611/audiensi-kbb-langkat-20261119.jpg',
+            'image_caption' => 'Pertemuan pengurus KBB Langkat dengan Plt Bupati Langkat di kantor bupati.',
+            'image_credit' => 'Foto: Binjai Langkat Today',
+            'category_slug' => 'kegiatan-sosial',
+            'read_time' => '2 menit',
+            'source_name' => 'Binjai Langkat Today',
+            'source_url' => 'https://www.binjailangkattoday.com/2026/11/plt-bupati-tiorita-ajak-bubuhan-banjar.html',
+            'editor_note' => 'Ringkasan orisinal; tanggal pelantikan disebut sebagai rencana, bukan kepastian.',
+            'published_at' => '2026-11-20 10:44:00',
+            'tags' => ['KBB Langkat', 'Audiensi', 'Sumatera Utara', 'Pelantikan'],
+        ],
+        [
+            'title' => 'Sarasehan Kebangsaan KBB Inhil Bahas Peran DPD RI dan Aspirasi Daerah',
+            'slug' => 'sarasehan-kebangsaan-kbb-inhil-peran-dpd-ri',
+            'excerpt' => 'KBB Indragiri Hilir mengikuti sarasehan kebangsaan bersama K.H. Muhammad Mursyid di Tembilahan. Forum membahas peran DPD RI dan penyampaian aspirasi daerah.',
+            'content' => <<<'HTML'
+<p>Pengurus Kerukunan Bubuhan Banjar (KBB) Indragiri Hilir dan Ikatan Wanita Bubuhan Banjar Riau (IWABBRI) menghadiri Sarasehan Kebangsaan bersama <strong>K.H. Muhammad Mursyid, M.Pd.I.</strong> di Hotel Top 5, Tembilahan, pada pertengahan November 2026. Tokoh masyarakat, tokoh agama, kalangan pemuda, dan sejumlah pejabat daerah turut mengikuti forum tersebut.</p>
+<p>Mursyid menjelaskan peran DPD RI dalam menyerap aspirasi daerah dan menjaga konstitusi. Dialog memberi ruang bagi peserta untuk membahas bagaimana kebutuhan masyarakat di daerah dapat disampaikan melalui wakilnya di tingkat nasional.</p>
+<p>Ketua KBB Inhil yang akrab disapa Julak Aqil berharap kegiatan tersebut membantu warga memahami tugas dan fungsi DPD RI. Liputan ini melengkapi <a href="https://kbbsadunia.com/article/video-sarasehan-kebangsaan-mpr-ri-kh-muhammad-mursyid">rekaman video sarasehan</a> yang sudah tersedia di portal KBB Sadunia.</p>
+<p><strong>Sumber:</strong> ringkasan redaksi berdasarkan <a href="https://koranindragiripos.com/daerah/17/11/2026/kh-muhammad-mursyid-gelar-sarasehan-kebangsaan-bersama-kbb-inhil.html" target="_blank" rel="noopener noreferrer">Koran Indragiri Pos, 17 November 2026</a> dan <a href="https://kabarlah.com/berita/nasional/2026/11/15/tokoh-banjar-inhil-bersatu-sambut-hangat-senator-riau-k-h-muhammad-mursyid-dalam-sarasehan-kbb/" target="_blank" rel="noopener noreferrer">Kabarlah, 15 November 2026</a>.</p>
+HTML,
+            'image_url' => '/article_images/curated-202611/sarasehan-kbb-inhil-20261115.jpg',
+            'image_caption' => 'Suasana Sarasehan Kebangsaan bersama K.H. Muhammad Mursyid di Tembilahan.',
+            'image_credit' => 'Foto: Kabarlah',
+            'category_slug' => 'sosial',
+            'read_time' => '2 menit',
+            'source_name' => 'Koran Indragiri Pos / Kabarlah',
+            'source_url' => 'https://koranindragiripos.com/daerah/17/11/2026/kh-muhammad-mursyid-gelar-sarasehan-kebangsaan-bersama-kbb-inhil.html',
+            'editor_note' => 'Liputan acara, berbeda dari arsip video; foto dokumentasi dari Kabarlah.',
+            'published_at' => '2026-11-17 07:38:00',
+            'tags' => ['KBB Inhil', 'Sarasehan Kebangsaan', 'Muhammad Mursyid', 'DPD RI'],
+        ],
+        [
+            'title' => 'KBB dan Pemko Banjarbaru Gelar Salat Istisqa, Doakan Hujan dan Keselamatan',
+            'slug' => 'kbb-pemko-banjarbaru-salat-istisqa-doa-hujan-2026',
+            'excerpt' => 'DPC KBB Kota Banjarbaru bersama pemerintah kota menggelar Salat Istisqa di halaman Balai Kota pada 2 November 2026 sebagai doa menghadapi dampak karhutla.',
+            'content' => <<<'HTML'
+<p>Dewan Pengurus Cabang Kerukunan Bubuhan Banjar (KBB) Kota Banjarbaru bekerja sama dengan Pemerintah Kota Banjarbaru menggelar <strong>Salat Istisqa berjamaah</strong> di halaman Balai Kota, Senin, 2 November 2026. Kegiatan ini menjadi ikhtiar bersama untuk memohon hujan dan keselamatan saat daerah menghadapi dampak kebakaran hutan dan lahan.</p>
+<p>Salat dipimpin Tuan Guru K.H. Muhammad Wildan Salman dan diikuti warga, tokoh agama, serta jajaran pemerintah daerah. Wali Kota Banjarbaru Hj. Erna Lisa Halaby dan Ketua Umum KBB Sadunia H. Sahbirin Noor hadir dalam kegiatan tersebut.</p>
+<p>Media Center Banjarbaru melaporkan bahwa pemkot dan KBB mengadakan kegiatan ini secara bersama. Selain berdoa agar kondisi kabut asap membaik, pemerintah kota menyampaikan langkah antisipasi banjir dalam peralihan ke musim hujan, termasuk penanganan saluran drainase.</p>
+<p><strong>Sumber:</strong> ringkasan redaksi berdasarkan <a href="https://mediacenter.banjarbarukota.go.id/2026/11/02/doa-bersama-akhiri-karhutla-pemko-banjarbaru-dan-kerukunan-bubuhan-banjar-gelar-salat-istisqa-berjamaah/" target="_blank" rel="noopener noreferrer">Media Center Banjarbaru, 2 November 2026</a>.</p>
+HTML,
+            'image_url' => '/article_images/curated-202611/salat-istisqa-kbb-banjarbaru-20261102.jpg',
+            'image_caption' => 'Kegiatan Salat Istisqa bersama KBB dan Pemko Banjarbaru di halaman Balai Kota.',
+            'image_credit' => 'Foto: Media Center Banjarbaru',
+            'category_slug' => 'sosial',
+            'read_time' => '2 menit',
+            'source_name' => 'Media Center Banjarbaru',
+            'source_url' => 'https://mediacenter.banjarbarukota.go.id/2026/11/02/doa-bersama-akhiri-karhutla-pemko-banjarbaru-dan-kerukunan-bubuhan-banjar-gelar-salat-istisqa-berjamaah/',
+            'editor_note' => 'Ringkasan orisinal dari sumber resmi Pemko Banjarbaru; foto acara dari sumber tersebut.',
+            'published_at' => '2026-11-02 12:00:00',
+            'tags' => ['KBB Banjarbaru', 'Salat Istisqa', 'Karhutla', 'Sosial'],
+        ],
+    ];
+
+    $categoryStmt = $db->prepare('SELECT id FROM categories WHERE slug = :slug LIMIT 1');
+    $insertArticle = $db->prepare(
+        'INSERT IGNORE INTO articles
+            (title, slug, excerpt, content, image_url, image_caption, image_credit, video_url,
+             category_id, author_id, status, featured, read_time, source_name, source_url,
+             editor_note, meta_title, meta_description, published_at)
+         SELECT
+            :title, :slug, :excerpt, :content, :image_url, :image_caption, :image_credit, NULL,
+            :category_id, :author_id, \'published\', 0, :read_time, :source_name, :source_url,
+            :editor_note, :meta_title, :meta_description, :published_at
+         WHERE NOT EXISTS (SELECT 1 FROM articles WHERE slug = :check_slug)'
+    );
+    $articleIdStmt = $db->prepare('SELECT id FROM articles WHERE slug = :slug LIMIT 1');
+    $upsertTag = $db->prepare(
+        'INSERT INTO tags (name, slug) VALUES (:name, :slug)
+         ON DUPLICATE KEY UPDATE name = VALUES(name)'
+    );
+    $tagIdStmt = $db->prepare('SELECT id FROM tags WHERE slug = :slug LIMIT 1');
+    $attachTag = $db->prepare('INSERT IGNORE INTO article_tags (article_id, tag_id) VALUES (:article_id, :tag_id)');
+
+    foreach ($articles as $article) {
+        $categoryStmt->execute([':slug' => $article['category_slug']]);
+        $categoryId = (int)$categoryStmt->fetchColumn();
+        if ($categoryId < 1) {
+            throw new RuntimeException('Editorial migration missing category: ' . $article['category_slug']);
+        }
+        $insertArticle->execute([
+            ':title' => $article['title'],
+            ':slug' => $article['slug'],
+            ':excerpt' => $article['excerpt'],
+            ':content' => $article['content'],
+            ':image_url' => $article['image_url'],
+            ':image_caption' => $article['image_caption'],
+            ':image_credit' => $article['image_credit'],
+            ':category_id' => $categoryId,
+            ':author_id' => $authorId,
+            ':read_time' => $article['read_time'],
+            ':source_name' => $article['source_name'],
+            ':source_url' => $article['source_url'],
+            ':editor_note' => $article['editor_note'],
+            ':meta_title' => $article['title'],
+            ':meta_description' => $article['excerpt'],
+            ':published_at' => $article['published_at'],
+            ':check_slug' => $article['slug'],
+        ]);
+
+        $articleIdStmt->execute([':slug' => $article['slug']]);
+        $articleId = (int)$articleIdStmt->fetchColumn();
+        if ($articleId < 1) {
+            throw new RuntimeException('Failed to resolve editorial article: ' . $article['slug']);
+        }
         foreach ($article['tags'] as $tagName) {
             $tagSlug = strtolower(trim((string)preg_replace('/[^a-z0-9]+/i', '-', $tagName), '-'));
             $upsertTag->execute([':name' => $tagName, ':slug' => $tagSlug]);

@@ -731,16 +731,14 @@ function getArticles() {
     }
     $includeContent = $isAdminOrAuthor && (($_GET['include_content'] ?? '') === '1');
 
-    if ($statusFilter === 'published' && !$isAdminOrAuthor) {
-        setPublicCacheHeaders($search ? 120 : 180);
-    } else {
-        setPrivateNoStoreHeaders();
-    }
+    // Published lists change on publish, edit, withdrawal and scheduled release.
+    // Browsers and shared caches must ask the API for the current list.
+    setPrivateNoStoreHeaders();
     
     $bindParams = [];
     $searchScoreParams = [];
     $searchScoreSql = "0";
-    $orderBySql = "COALESCE(a.published_at, a.created_at) DESC";
+    $orderBySql = "COALESCE(a.published_at, a.created_at) DESC, a.id DESC";
 
     if ($statusFilter === 'all') {
         if ($role === 'admin' || $role === 'editor') {
@@ -762,6 +760,19 @@ function getArticles() {
     if ($category) {
         $where .= " AND c.slug = :category";
         $bindParams[':category'] = $category;
+    }
+
+    if (is_string($_GET['exclude_categories'] ?? null)) {
+        $excluded = array_slice(array_filter(array_map('trim', explode(',', $_GET['exclude_categories']))), 0, 20);
+        $keys = [];
+        foreach ($excluded as $slug) {
+            $key = ':exclude_cat' . count($keys);
+            $keys[] = $key;
+            $bindParams[$key] = $slug;
+        }
+        if ($keys) {
+            $where .= ' AND (c.slug IS NULL OR c.slug NOT IN (' . implode(', ', $keys) . '))';
+        }
     }
 
     if ($tag) {
@@ -835,7 +846,7 @@ function getArticles() {
 
         if (!empty($scoreParts)) {
             $searchScoreSql = implode(" + ", $scoreParts);
-            $orderBySql = "search_score DESC, a.featured DESC, COALESCE(a.published_at, a.created_at) DESC";
+            $orderBySql = "search_score DESC, a.featured DESC, COALESCE(a.published_at, a.created_at) DESC, a.id DESC";
         }
     }
 

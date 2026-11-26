@@ -61,7 +61,9 @@ function rememberGetResponse(cacheKey, promise) {
 
 export async function fetchAPI(endpoint, options = {}) {
   const method = (options.method || "GET").toUpperCase();
-  const cacheableGet = canUseGetCache(endpoint, method);
+  const isArticleList = method === "GET" && /^\/articles(?:\?|$)/.test(endpoint);
+  const cacheMode = isArticleList ? "no-store" : options.cache;
+  const cacheableGet = cacheMode !== "no-store" && canUseGetCache(endpoint, method);
   const cacheKey = `${method}:${endpoint}`;
   if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
     getCache.clear();
@@ -95,6 +97,7 @@ export async function fetchAPI(endpoint, options = {}) {
     const response = await fetch(`${API_URL}${endpoint}`, {
       credentials: "include",
       ...options,
+      cache: cacheMode,
       headers,
     });
 
@@ -136,7 +139,7 @@ async function fetchFormAPI(endpoint, formData, fallbackError) {
 }
 
 // Articles API
-export const apiGetArticles = (params = "") => fetchAPI(`/articles${params}`);
+export const apiGetArticles = (params = "", options = {}) => fetchAPI(`/articles${params}`, options);
 export const apiSearchArticles = (query) => fetchAPI(`/articles?search=${encodeURIComponent(query)}`);
 export const apiGetArticleById = (id) => fetchAPI(`/articles/${id}`);
 export const apiGetArticleBySlug = (slug) => fetchAPI(`/articles/slug/${slug}`);

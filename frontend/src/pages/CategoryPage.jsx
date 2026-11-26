@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
-import { apiGetArticles } from "../services/api";
+import { useNewsFeed } from "../hooks/useNewsFeed";
 import ArticleCard from "../components/ArticleCard";
 import { Helmet } from "react-helmet-async";
 import { getAllCategoryList, getCategoryLabel, getVisibleCategoryList } from "../utils/categoryNavigation";
@@ -15,31 +15,15 @@ export default function CategoryPage() {
   const { slug } = useParams();
   const [params] = useSearchParams();
   const currentPage = Math.max(1, Number(params.get("page") || 1));
-  const [articles, setArticles] = useState([]);
-  const [meta, setMeta] = useState({ total_pages: 1, total: 0 });
-  const [loading, setLoading] = useState(true);
+  const { data: articles, meta, loading, error } = useNewsFeed(
+    `/articles?category=${encodeURIComponent(slug)}&page=${currentPage}&per_page=${PER_PAGE}`
+  );
   const { categories = [], loading: categoriesLoading } = useCategories();
-
-  useEffect(() => {
-    const fetchData = async () => {
-        setLoading(true);
-      try {
-        const articlesRes = await apiGetArticles(`?category=${encodeURIComponent(slug)}&page=${currentPage}&per_page=${PER_PAGE}`);
-        setArticles(articlesRes.data || []);
-        setMeta(articlesRes.meta || { total_pages: 1, total: 0 });
-      } catch (error) {
-        console.error("Failed to fetch category data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [slug, currentPage]);
 
   const category = categories.find((c) => c.slug === slug);
   const visibleCategories = getVisibleCategoryList(categories);
   const allCategories = getAllCategoryList(categories);
-  const totalArticles = Math.max(Number(meta.total || 0), Number(category?.article_count || 0), articles.length);
+  const totalArticles = Number(meta.total ?? category?.article_count ?? articles.length);
   const shownArticles = articles.length;
 
   useEffect(() => {
@@ -55,6 +39,8 @@ export default function CategoryPage() {
       </div>
     );
   }
+
+  if (error) return <p role="status" className="p-8 text-center">Berita belum bisa dimuat. Kami akan mencoba lagi secara otomatis.</p>;
 
   if (!category) {
     return (

@@ -1,22 +1,13 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useLang } from "../context/LangContext";
-import { apiGetArticles } from "../services/api";
+import { useNewsFeed } from "../hooks/useNewsFeed";
 import { Clock, PenLine, Quote } from "lucide-react";
 import { timeAgo } from "../utils/date";
 import OptimizedImage from "../components/OptimizedImage";
 
 export default function OpiniPage() {
   const { t } = useLang();
-  const [articles, setArticles] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    apiGetArticles(`?category=artikel--opini&per_page=30&t=${Date.now()}`)
-      .then(res => setArticles(res.data || []))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: articles, loading, error } = useNewsFeed("/articles?category=artikel--opini&per_page=30");
 
   return (
     <div className="min-h-screen bg-surface-50">
@@ -78,7 +69,7 @@ export default function OpiniPage() {
                   </Link>
                 ))
               ) : (
-                <div className="bg-white border border-surface-200 p-6 text-center text-surface-500">Belum ada opini yang dipublikasikan.</div>
+                <div className="bg-white border border-surface-200 p-6 text-center text-surface-500">{error ? "Opini belum bisa dimuat. Kami akan mencoba lagi secara otomatis." : "Belum ada opini yang dipublikasikan."}</div>
               )}
           </div>
         )}

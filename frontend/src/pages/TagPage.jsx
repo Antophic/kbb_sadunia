@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import ArticleCard from "../components/ArticleCard";
 import TrendingTopicsBar from "../components/TrendingTopicsBar";
 import { NewsExploreLinks, NewsIndexPagination } from "../components/NewsIndexNavigation";
-import { apiGetArticles, apiGetTags } from "../services/api";
+import { useNewsFeed } from "../hooks/useNewsFeed";
 import { getAllCategoryList } from "../utils/categoryNavigation";
 import { setSingleDocumentTitle } from "../utils/pageTitle";
 import { useCategories } from "../context/CategoriesContext";
@@ -15,42 +15,11 @@ export default function TagPage() {
   const { slug } = useParams();
   const [params] = useSearchParams();
   const currentPage = Math.max(1, Number(params.get("page") || 1));
-  const [articles, setArticles] = useState([]);
-  const [tags, setTags] = useState([]);
-  const [meta, setMeta] = useState({ total_pages: 1, total: 0 });
-  const [loading, setLoading] = useState(true);
+  const { data: articles, meta, loading, error } = useNewsFeed(
+    `/articles?tag=${encodeURIComponent(slug)}&page=${currentPage}&per_page=${PER_PAGE}`
+  );
+  const { data: tags } = useNewsFeed("/tags", 300_000);
   const { categories = [] } = useCategories();
-
-  useEffect(() => {
-    let ignore = false;
-
-    const loadTagData = async () => {
-      setLoading(true);
-      try {
-        const [articlesRes, tagsRes] = await Promise.all([
-          apiGetArticles(`?tag=${encodeURIComponent(slug)}&page=${currentPage}&per_page=${PER_PAGE}`),
-          apiGetTags(),
-        ]);
-        if (ignore) return;
-        setArticles(articlesRes.data || []);
-        setMeta(articlesRes.meta || { total_pages: 1, total: 0 });
-        setTags(tagsRes.data || []);
-      } catch {
-        if (!ignore) {
-          setArticles([]);
-          setMeta({ total_pages: 1, total: 0 });
-        }
-      } finally {
-        if (!ignore) setLoading(false);
-      }
-    };
-
-    loadTagData();
-
-    return () => {
-      ignore = true;
-    };
-  }, [slug, currentPage]);
 
   const tag = useMemo(() => tags.find((item) => item.slug === slug), [slug, tags]);
   const title = tag?.name || slug.replace(/-/g, " ");
@@ -104,7 +73,7 @@ export default function TagPage() {
               </>
             ) : (
               <div className="bg-white border border-surface-200 p-10 text-center text-surface-500 font-semibold">
-                Belum ada artikel untuk topik ini.
+                {error ? "Berita belum bisa dimuat. Kami akan mencoba lagi secara otomatis." : "Belum ada artikel untuk topik ini."}
               </div>
             )}
 

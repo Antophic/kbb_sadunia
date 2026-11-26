@@ -36,6 +36,8 @@ flowchart LR
 flowchart TD
     start([Buka kbbsadunia.com]) --> home[Beranda]
     home --> choice{Tujuan pengunjung}
+    home -->|"Saat dibuka, aktif kembali, atau tiap menit"| news[Ambil daftar berita terbit]
+    news -->|Terbaru lebih dahulu| tops[Sorotan Utama dan Fokus Hari Ini]
 
     choice --> latest[Terkini, kategori, atau tag]
     choice --> search[Pencarian]

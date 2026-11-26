@@ -6,6 +6,8 @@
 
 $request_uri = $_SERVER['REQUEST_URI'] ?? '/';
 $html_file = __DIR__ . '/index.html';
+// Check the entry HTML on every visit so old bookmarks receive the current app bundle.
+header('Cache-Control: no-cache, max-age=0, must-revalidate');
 
 if (!file_exists($html_file)) {
     http_response_code(404);

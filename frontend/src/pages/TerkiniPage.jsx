@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { apiGetArticles, apiGetTrending } from "../services/api";
+import { useNewsFeed } from "../hooks/useNewsFeed";
 import { EXCLUDE_TENTANG_PARAMS } from "../utils/tentangCategories";
 import ArticleCard from "../components/ArticleCard";
 import { Link, useSearchParams } from "react-router-dom";
@@ -14,31 +13,9 @@ const PER_PAGE = 10;
 export default function TerkiniPage() {
   const [params] = useSearchParams();
   const currentPage = Math.max(1, Number(params.get("page") || 1));
-  const [articles, setArticles] = useState([]);
-  const [trending, setTrending] = useState([]);
-  const [meta, setMeta] = useState({ total_pages: 1 });
-  const [loading, setLoading] = useState(true);
+  const { data: articles, meta, loading, error } = useNewsFeed(`/articles?page=${currentPage}&per_page=${PER_PAGE}&${EXCLUDE_TENTANG_PARAMS}`);
+  const { data: trending } = useNewsFeed("/trending", 300_000);
   const { categories = [] } = useCategories();
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [articlesRes, trendingRes] = await Promise.all([
-          apiGetArticles(`?page=${currentPage}&per_page=${PER_PAGE}&${EXCLUDE_TENTANG_PARAMS}`),
-          apiGetTrending(),
-        ]);
-        setArticles(articlesRes.data || []);
-        setMeta(articlesRes.meta || { total_pages: 1 });
-        setTrending(trendingRes.data || []);
-      } catch (error) {
-        console.error("Failed to fetch terkini data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [currentPage]);
 
   if (loading) {
     return (
@@ -70,7 +47,7 @@ export default function TerkiniPage() {
                   <ArticleCard key={a.id} article={a} variant="list" />
                 ))
               ) : (
-                <div className="text-center py-12 text-surface-500 font-medium">Belum ada berita terkini.</div>
+                <div className="text-center py-12 text-surface-500 font-medium">{error ? "Berita belum bisa dimuat. Kami akan mencoba lagi secara otomatis." : "Belum ada berita terkini."}</div>
               )}
             </div>
             

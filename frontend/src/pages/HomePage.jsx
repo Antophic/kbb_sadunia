@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import ArticleCard from "../components/ArticleCard";
 import { Link } from "react-router-dom";
-import { apiGetArticles, apiGetTrending } from "../services/api";
+import { useNewsFeed } from "../hooks/useNewsFeed";
 import { EXCLUDE_TENTANG_PARAMS } from "../utils/tentangCategories";
 import { HOME_TITLE } from "../utils/siteIdentity";
 import useEmblaCarousel from 'embla-carousel-react';
@@ -12,34 +12,16 @@ import OptimizedImage from "../components/OptimizedImage";
 import { useCategories } from "../context/CategoriesContext";
 
 export default function HomePage() {
-  const [data, setData] = useState({
-    articles: [],
-    trending: [],
-  });
-  const [loading, setLoading] = useState(true);
-  const [emblaRef] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 5000 })]);
+  const { data: articles, loading, error } = useNewsFeed(`/articles?per_page=30&${EXCLUDE_TENTANG_PARAMS}`);
+  const { data: trending } = useNewsFeed("/trending", 300_000);
+  const autoplay = useMemo(() => [Autoplay({ delay: 5000 })], []);
+  const [emblaRef, carousel] = useEmblaCarousel({ loop: true }, autoplay);
   const { categories = [] } = useCategories();
+  const leadId = articles[0]?.id;
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [articlesRes, trendingRes] = await Promise.all([
-          apiGetArticles(`?per_page=30&${EXCLUDE_TENTANG_PARAMS}`),
-          apiGetTrending(),
-        ]);
-        
-        setData({
-          articles: articlesRes.data || [],
-          trending: trendingRes.data || [],
-        });
-      } catch (error) {
-        console.error("Failed to fetch homepage data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+    carousel?.scrollTo(0, true);
+  }, [carousel, leadId]);
 
   if (loading) {
     return (
@@ -49,19 +31,16 @@ export default function HomePage() {
     );
   }
 
-  const { articles, trending } = data;
-  const breaking = articles.find((a) => a.breaking);
-  const featured = articles.filter((a) => a.featured);
-  const latest = articles.slice(0, 30);
-  const hasArticles = articles.length > 0;
-  
-  // Editorial layout logic
-  const sliderArticles = featured.length > 0 ? featured.slice(0, 5) : latest.slice(0, 3);
-  const sideHeadlines = latest.filter(a => !sliderArticles.find(s => s.id === a.id)).slice(0, 3);
-  const gridNews = latest.filter(a => !sliderArticles.find(s => s.id === a.id) && !sideHeadlines.find(s => s.id === a.id)).slice(0, 6);
-  const moreLatestCandidates = latest.filter(a => !sliderArticles.find(s => s.id === a.id) && !sideHeadlines.find(s => s.id === a.id) && !gridNews.find(s => s.id === a.id)).slice(0, 6);
-  const moreLatest = moreLatestCandidates.length > 0 ? moreLatestCandidates : latest.slice(0, 6);
-  const editorPicks = featured.length > 0 ? featured.slice(0, 4) : latest.slice(0, 4);
+  const breaking = articles.find(a => a.breaking);
+  const [lead] = articles;
+  const sideHeadlines = articles.slice(1, 4);
+  // The next three stories stay visible beside the lead. Extra slides come from the same publication day.
+  const leadDay = lead?.published_at?.slice(0, 10);
+  const additionalSlides = leadDay ? articles.slice(4).filter(a => a.published_at?.startsWith(leadDay)).slice(0, 2) : [];
+  const sliderArticles = lead ? [lead, ...additionalSlides] : [];
+  const gridNews = articles.slice(4).filter(a => !additionalSlides.some(slide => slide.id === a.id)).slice(0, 6);
+  const moreLatest = articles.slice(0, 6);
+  const editorPicks = articles.filter(a => Number(a.featured) === 1).slice(0, 4);
 
   return (
     <div className="min-h-screen bg-white pb-12 transition-colors duration-200">
@@ -103,7 +82,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Main Headline (Slider) */}
             <div className="lg:col-span-8 overflow-hidden bg-white border border-surface-200 shadow-sm relative group" ref={emblaRef}>
-              {hasArticles ? (
+              {lead ? (
                 <div className="flex h-full">
                   {sliderArticles.map(article => (
                     <div key={article.id} className="flex-[0_0_100%] min-w-0 h-[450px] relative">
@@ -134,9 +113,8 @@ export default function HomePage() {
                 </div>
               ) : (
                 <div className="h-[450px] flex flex-col justify-center p-8 bg-surface-50">
-                  <span className="text-[11px] font-black uppercase tracking-widest text-primary-700 mb-3">Belum ada artikel terbit</span>
-                  <h3 className="text-3xl font-serif font-black text-surface-900 mb-3">Konten redaksi akan tampil di sini.</h3>
-                  <p className="text-surface-600 max-w-lg">Masuk ke dashboard untuk membuat artikel pertama, mengunggah gambar andalan, lalu terbitkan agar muncul di beranda.</p>
+                  <h3 className="text-3xl font-serif font-black text-surface-900 mb-3">{error ? "Berita belum bisa dimuat." : "Belum ada berita terbit."}</h3>
+                  {error && <p className="text-surface-600 max-w-lg">Beranda akan mencoba lagi secara otomatis.</p>}
                 </div>
               )}
             </div>
