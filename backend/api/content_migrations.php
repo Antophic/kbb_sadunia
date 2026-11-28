@@ -530,6 +530,7 @@ function runEditorialContentMigration20261127(PDO $db): void {
     $statusStmt = $db->prepare('SELECT setting_value FROM settings WHERE setting_key = :key LIMIT 1');
     $statusStmt->execute([':key' => $migrationKey]);
     if ($statusStmt->fetchColumn() === 'complete') {
+        runEditorialContentMigration20261128($db);
         return;
     }
 
@@ -687,6 +688,99 @@ HTML,
             if ($tagId > 0) {
                 $attachTag->execute([':article_id' => $articleId, ':tag_id' => $tagId]);
             }
+        }
+    }
+
+    $completeStmt = $db->prepare(
+        "INSERT INTO settings (setting_key, setting_value) VALUES (:key, 'complete')
+         ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)"
+    );
+    $completeStmt->execute([':key' => $migrationKey]);
+    runEditorialContentMigration20261128($db);
+}
+
+function runEditorialContentMigration20261128(PDO $db): void {
+    $migrationKey = 'content_migration_20261128_pumpung_kongres_kbb';
+    $statusStmt = $db->prepare('SELECT setting_value FROM settings WHERE setting_key = :key LIMIT 1');
+    $statusStmt->execute([':key' => $migrationKey]);
+    if ($statusStmt->fetchColumn() === 'complete') {
+        return;
+    }
+
+    $authorId = (int)$db->query(
+        "SELECT id FROM users ORDER BY CASE role WHEN 'admin' THEN 0 WHEN 'editor' THEN 1 ELSE 2 END, id LIMIT 1"
+    )->fetchColumn();
+    if ($authorId < 1) {
+        throw new RuntimeException('Editorial migration requires at least one user');
+    }
+    $categoryStmt = $db->prepare('SELECT id FROM categories WHERE slug = :slug LIMIT 1');
+    $categoryStmt->execute([':slug' => 'budaya-banjar']);
+    $categoryId = (int)$categoryStmt->fetchColumn();
+    if ($categoryId < 1) {
+        throw new RuntimeException('Editorial migration missing category: budaya-banjar');
+    }
+
+    $title = 'Pemko Banjarbaru Bidik Promosi Budaya Cempaka Lewat Kongres KBB';
+    $slug = 'banjarbaru-promosi-budaya-cempaka-kongres-kbb-2026';
+    $excerpt = 'Saat membuka Festival Pumpung, Wali Kota Lisa Halaby menyebut rencana Kongres KBB di Banjarbaru pada Desember sebagai peluang mengenalkan seni, budaya, dan produk kreatif Cempaka.';
+    $content = <<<'HTML'
+<p>Wali Kota Banjarbaru <strong>Hj. Erna Lisa Halaby</strong> membuka Festival Pumpung 2026 di Pumpung Creative Space, Kelurahan Sungai Tiung, Kecamatan Cempaka, pada Sabtu, 21 November 2026. Festival ini menampilkan potensi seni, budaya, kuliner, kerajinan, dan produk ekonomi kreatif warga setempat.</p>
+<p>Menurut Media Center Banjarbaru, pemerintah kota ingin memperluas jangkauan promosi potensi Cempaka. Salah satu peluang yang disebut Lisa adalah <strong>rencana penyelenggaraan Kongres Kerukunan Bubuhan Banjar (KBB)</strong> di Banjarbaru pada Desember 2026. Momentum itu diharapkan membuka kesempatan memperkenalkan karya dan produk lokal kepada khalayak yang lebih luas.</p>
+<p>Penyebutan Kongres KBB dalam laporan tersebut merupakan rencana pemanfaatan momentum acara mendatang. Festival Pumpung bukan laporan bahwa kongres telah berlangsung atau bahwa pengurus KBB hadir dalam pembukaan festival.</p>
+<p><strong>Sumber:</strong> ringkasan redaksi berdasarkan <a href="https://mediacenter.banjarbarukota.go.id/2026/11/21/wali-kota-lisa-buka-festival-pumpung-2026-dorong-potensi-kreatif-cempaka-tembus-pasar-internasional/" target="_blank" rel="noopener noreferrer">Media Center Banjarbaru, 21 November 2026</a>.</p>
+HTML;
+    $sourceUrl = 'https://mediacenter.banjarbarukota.go.id/2026/11/21/wali-kota-lisa-buka-festival-pumpung-2026-dorong-potensi-kreatif-cempaka-tembus-pasar-internasional/';
+
+    $insertArticle = $db->prepare(
+        'INSERT IGNORE INTO articles
+            (title, slug, excerpt, content, image_url, image_caption, image_credit, video_url,
+             category_id, author_id, status, featured, read_time, source_name, source_url,
+             editor_note, meta_title, meta_description, published_at)
+         SELECT
+            :title, :slug, :excerpt, :content, :image_url, :image_caption, :image_credit, NULL,
+            :category_id, :author_id, \'published\', 0, :read_time, :source_name, :source_url,
+            :editor_note, :meta_title, :meta_description, :published_at
+         WHERE NOT EXISTS (SELECT 1 FROM articles WHERE slug = :check_slug)'
+    );
+    $insertArticle->execute([
+        ':title' => $title,
+        ':slug' => $slug,
+        ':excerpt' => $excerpt,
+        ':content' => $content,
+        ':image_url' => '/article_images/curated-202611/festival-pumpung-banjarbaru-20261121.jpg',
+        ':image_caption' => 'Salah satu kegiatan Festival Pumpung 2026 di Cempaka, Banjarbaru.',
+        ':image_credit' => 'Foto: Media Center Banjarbaru',
+        ':category_id' => $categoryId,
+        ':author_id' => $authorId,
+        ':read_time' => '2 menit',
+        ':source_name' => 'Media Center Banjarbaru',
+        ':source_url' => $sourceUrl,
+        ':editor_note' => 'Ringkasan orisinal dari sumber resmi; Kongres KBB disebut sebagai agenda mendatang, bukan kegiatan yang sudah berlangsung.',
+        ':meta_title' => $title,
+        ':meta_description' => $excerpt,
+        ':published_at' => '2026-11-21 15:00:00',
+        ':check_slug' => $slug,
+    ]);
+
+    $articleIdStmt = $db->prepare('SELECT id FROM articles WHERE slug = :slug LIMIT 1');
+    $articleIdStmt->execute([':slug' => $slug]);
+    $articleId = (int)$articleIdStmt->fetchColumn();
+    if ($articleId < 1) {
+        throw new RuntimeException('Failed to resolve editorial article: ' . $slug);
+    }
+    $upsertTag = $db->prepare(
+        'INSERT INTO tags (name, slug) VALUES (:name, :slug)
+         ON DUPLICATE KEY UPDATE name = VALUES(name)'
+    );
+    $tagIdStmt = $db->prepare('SELECT id FROM tags WHERE slug = :slug LIMIT 1');
+    $attachTag = $db->prepare('INSERT IGNORE INTO article_tags (article_id, tag_id) VALUES (:article_id, :tag_id)');
+    foreach (['Kongres KBB', 'Budaya Banjar', 'Banjarbaru', 'Festival Pumpung'] as $tagName) {
+        $tagSlug = strtolower(trim((string)preg_replace('/[^a-z0-9]+/i', '-', $tagName), '-'));
+        $upsertTag->execute([':name' => $tagName, ':slug' => $tagSlug]);
+        $tagIdStmt->execute([':slug' => $tagSlug]);
+        $tagId = (int)$tagIdStmt->fetchColumn();
+        if ($tagId > 0) {
+            $attachTag->execute([':article_id' => $articleId, ':tag_id' => $tagId]);
         }
     }
 
