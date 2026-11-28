@@ -704,6 +704,7 @@ function runEditorialContentMigration20261128(PDO $db): void {
     $statusStmt = $db->prepare('SELECT setting_value FROM settings WHERE setting_key = :key LIMIT 1');
     $statusStmt->execute([':key' => $migrationKey]);
     if ($statusStmt->fetchColumn() === 'complete') {
+        runEditorialContentMigration20261128Archive2026($db);
         return;
     }
 
@@ -781,6 +782,280 @@ HTML;
         $tagId = (int)$tagIdStmt->fetchColumn();
         if ($tagId > 0) {
             $attachTag->execute([':article_id' => $articleId, ':tag_id' => $tagId]);
+        }
+    }
+
+    $completeStmt = $db->prepare(
+        "INSERT INTO settings (setting_key, setting_value) VALUES (:key, 'complete')
+         ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)"
+    );
+    $completeStmt->execute([':key' => $migrationKey]);
+    runEditorialContentMigration20261128Archive2026($db);
+}
+
+function runEditorialContentMigration20261128Archive2026(PDO $db): void {
+    $migrationKey = 'content_migration_20261128_kbb_2026_archive';
+    $statusStmt = $db->prepare('SELECT setting_value FROM settings WHERE setting_key = :key LIMIT 1');
+    $statusStmt->execute([':key' => $migrationKey]);
+    if ($statusStmt->fetchColumn() === 'complete') {
+        return;
+    }
+
+    $authorId = (int)$db->query(
+        "SELECT id FROM users ORDER BY CASE role WHEN 'admin' THEN 0 WHEN 'editor' THEN 1 ELSE 2 END, id LIMIT 1"
+    )->fetchColumn();
+    if ($authorId < 1) {
+        throw new RuntimeException('Editorial migration requires at least one user');
+    }
+
+    // Original summaries of ten previously missing 2026 reports. Each photo is from its own event.
+    $articles = [
+        [
+            'title' => 'Aruh Ganal KBB Bulungan Pererat Persaudaraan Warga Banjar dan Masyarakat Kaltara',
+            'slug' => 'aruh-ganal-kbb-bulungan-budaya-banjar-2026',
+            'excerpt' => 'KBB Bulungan menggelar Aruh Ganal di Tanjung Selor dengan seni, kuliner, dan kegiatan warga untuk mempererat persaudaraan lintas komunitas.',
+            'content' => <<<'HTML'
+<p>Kerukunan Bubuhan Banjar (KBB) Kabupaten Bulungan menggelar <strong>Aruh Ganal Bubuhan Banjar</strong> di lapangan terbuka Jalan Pahlawan, Tanjung Selor, pada 10 Oktober 2026. Kegiatan ini mempertemukan warga Banjar dan masyarakat dari berbagai latar belakang di Kalimantan Utara.</p>
+<p>Ketua KBB Bulungan Dharmawan menyampaikan bahwa pertemuan budaya tersebut menjadi ruang untuk merawat persaudaraan. Sekretaris Daerah Bulungan Risdianto turut hadir. Selain pertunjukan budaya, pengunjung dapat mengenal kuliner Banjar seperti serabi dan amparan tatak serta produk pelaku usaha kecil.</p>
+HTML,
+            'image_url' => '/article_images/curated-2026-archive/aruh-ganal-kbb-bulungan-20261010.jpg',
+            'image_caption' => 'Kegiatan Aruh Ganal Bubuhan Banjar di Tanjung Selor, Bulungan.',
+            'image_credit' => 'Foto: ANTARA/Agus Salam',
+            'category_slug' => 'budaya-banjar',
+            'source_name' => 'ANTARA Kaltara',
+            'source_url' => 'https://kaltara.antaranews.com/berita/524309/aruh-ganal-bubuhan-banjar-perkuat-persaudaraan-masyarakat-bulungan',
+            'published_at' => '2026-10-10 20:49:00',
+            'tags' => ['KBB Bulungan', 'Aruh Ganal', 'Budaya Banjar'],
+        ],
+        [
+            'title' => 'Bubuhan Banjar Balikpapan Siapkan Konsolidasi Enam DPC Usai Musda',
+            'slug' => 'kbkkt-balikpapan-konsolidasi-enam-dpc-2026',
+            'excerpt' => 'Pengurus Bubuhan Banjar di Balikpapan menyiapkan konsolidasi enam DPC dan paguyuban setelah Musda V, disertai rencana kegiatan keagamaan dan budaya.',
+            'content' => <<<'HTML'
+<p>Setelah Musyawarah Daerah V pada 27 September 2026, pengurus Kerukunan Bubuhan Banjar Kalimantan Timur (KBKKT) di Balikpapan menyiapkan langkah konsolidasi. Ketua terpilih Rendy S. Ismail menyebut <strong>enam DPC</strong> dan sejumlah paguyuban Banjar sebagai bagian dari jaringan yang perlu dirangkul.</p>
+<p>Dalam laporan yang terbit 4 Oktober, Rendy juga membicarakan rencana kegiatan keagamaan, pelestarian budaya, dan penguatan ekonomi warga. Agenda tersebut masih berupa arah kerja kepengurusan, bukan kegiatan yang telah selesai dilaksanakan.</p>
+HTML,
+            'image_url' => '/article_images/curated-2026-archive/kbkkt-balikpapan-konsolidasi-20261004.jpg',
+            'image_caption' => 'Pertemuan pengurus Bubuhan Banjar di Balikpapan seusai Musda V.',
+            'image_credit' => 'Foto: Gerbang Kaltim',
+            'category_slug' => 'kegiatan',
+            'source_name' => 'Gerbang Kaltim',
+            'source_url' => 'https://www.gerbangkaltim.com/kbkkt-balikpapan-fokus-konsolidasi-enam-dpc-dan-paguyuban-banjar/',
+            'published_at' => '2026-10-04 20:26:00',
+            'tags' => ['KBB Balikpapan', 'Musda', 'Kalimantan Timur'],
+        ],
+        [
+            'title' => 'Maulid KBB Sulawesi Tengah di Palu Jadi Ruang Silaturahmi Warga Banjar',
+            'slug' => 'maulid-kbb-sulteng-palu-silaturahmi-2026',
+            'excerpt' => 'Warga KBB Sulawesi Tengah memperingati Maulid Nabi di Asrama Haji Transit Palu dan memperkuat silaturahmi warga Banjar di perantauan.',
+            'content' => <<<'HTML'
+<p>Kerukunan Bubuhan Banjar (KBB) Sulawesi Tengah mengadakan peringatan Maulid Nabi Muhammad SAW di Asrama Haji Transit Palu pada 18 September 2026. Warga Banjar dari Palu dan sekitarnya berkumpul untuk berdoa dan menjaga hubungan kekeluargaan.</p>
+<p>Ketua TP PKK Kota Palu Diah Puspita menghadiri kegiatan tersebut dan mengajak warga meneladani akhlak Rasulullah serta memperkuat silaturahmi. Acara ini juga menjadi kesempatan bagi keluarga Banjar di perantauan untuk bertemu dalam kegiatan keagamaan bersama.</p>
+HTML,
+            'image_url' => '/article_images/curated-2026-archive/maulid-kbb-sulteng-palu-20260918.jpeg',
+            'image_caption' => 'Peringatan Maulid Nabi yang digelar KBB Sulawesi Tengah di Palu.',
+            'image_credit' => 'Foto: Harian Mercusuar',
+            'category_slug' => 'kegiatan-sosial',
+            'source_name' => 'Pemerintah Kota Palu',
+            'source_url' => 'https://palukota.go.id/maulid-nabi-ketua-tp-pkk-palu-ajak-warga-teladani-akhlak-rasulullah-dan-perkuat-silaturahim/',
+            'photo_source_url' => 'https://mercusuar.web.id/sulteng-membangun/warga-kerukunan-keluarga-banjar-sulteng-gelar-maulid-nabi-muhammad-saw/',
+            'published_at' => '2026-09-18 18:00:00',
+            'tags' => ['KBB Sulawesi Tengah', 'Maulid Nabi', 'Palu'],
+        ],
+        [
+            'title' => 'KBB Jawa Timur Doakan Keluarga Korban KMP Virgo di Tanjung Perak',
+            'slug' => 'kbb-jatim-doa-keluarga-korban-kmp-virgo-2026',
+            'excerpt' => 'KBB Jatim bersama komunitas Banjar dan majelis taklim mengadakan tausiah serta doa bagi keluarga korban KMP Virgo Transport 8 di Surabaya.',
+            'content' => <<<'HTML'
+<p>Kerukunan Bubuhan Banjar (KBB) Jawa Timur bersama Anak Muda Bubuhan Banjar Jawa Timur dan Majelis Taklim Sirrul Qulub mengadakan tausiah serta doa bersama pada 17 September 2026. Kegiatan berlangsung di posko Pelabuhan Tanjung Perak, Surabaya, dan diikuti keluarga korban KMP Virgo Transport 8 serta masyarakat sekitar.</p>
+<p>Para peserta mendoakan keluarga yang terdampak dan petugas yang melakukan pencarian. Kegiatan ini merupakan bentuk dukungan moral bagi keluarga pada masa penanganan musibah, tanpa mendahului hasil pencarian atau penyelidikan.</p>
+HTML,
+            'image_url' => '/article_images/curated-2026-archive/doa-kbb-jatim-kmp-virgo-20260917.jpg',
+            'image_caption' => 'Doa bersama KBB Jawa Timur dan keluarga korban di posko Tanjung Perak.',
+            'image_credit' => 'Foto: Indonesiakini',
+            'category_slug' => 'sosial-dan-kemanusiaan',
+            'source_name' => 'Indonesiakini',
+            'source_url' => 'https://indonesiakini.id/2026/09/19/keluarga-korban-kmp-virgo-transport-8-dikuatkan-lewat-tausiyah-dan-doa-bersama/',
+            'published_at' => '2026-09-19 00:13:00',
+            'tags' => ['KBB Jawa Timur', 'Doa Bersama', 'Surabaya'],
+        ],
+        [
+            'title' => 'KBB Dukung Satu Hari Sasirangan di Bogor, Perkenalkan Kain dan Kuliner Banjar',
+            'slug' => 'kbb-sadunia-dukung-satu-hari-sasirangan-bogor-2026',
+            'excerpt' => 'Kegiatan Satu Hari Sasirangan di Bogor mempertemukan peragaan busana, lokakarya pewarna alami, dan kuliner Banjar dengan dukungan KBB Sadunia.',
+            'content' => <<<'HTML'
+<p>Kegiatan <strong>Satu Hari Sasirangan</strong> berlangsung di Bogor pada 30 Agustus 2026. Peragaan busana, lokakarya pewarna alami, dan sajian kuliner memperkenalkan kain khas Banjar kepada pengunjung dengan cara yang dekat dengan kehidupan sehari-hari.</p>
+<p>KBB Sadunia mendukung kegiatan pelestarian budaya tersebut. Perwakilan KBB Jabodetabek, Syafrudin, turut hadir. Melalui kegiatan ini, para pelaku budaya mengajak generasi muda mengenal nilai dan proses pembuatan Sasirangan sekaligus melihat peluang bagi perajin.</p>
+HTML,
+            'image_url' => '/article_images/curated-2026-archive/satu-hari-sasirangan-bogor-20260830.jpg',
+            'image_caption' => 'Peserta Satu Hari Sasirangan di Bogor memperlihatkan kain Sasirangan.',
+            'image_credit' => 'Foto: Mediaprofesi',
+            'category_slug' => 'budaya-banjar',
+            'source_name' => 'Mediaprofesi',
+            'source_url' => 'https://mediaprofesi.id/blog/2026/09/01/sasirangan-menyala-di-bogor-warisan-banjar-tampil-modern-dan-makin-memikat/',
+            'published_at' => '2026-09-01 12:00:00',
+            'tags' => ['KBB Sadunia', 'Sasirangan', 'Bogor', 'Budaya Banjar'],
+        ],
+        [
+            'title' => 'KBB Pulang Pisau Tampilkan Seni Banjar pada Hari Jadi Kabupaten',
+            'slug' => 'kbb-pulang-pisau-tampilkan-seni-banjar-harjad-2026',
+            'excerpt' => 'KBB Pulang Pisau ikut memeriahkan Hari Jadi ke-24 kabupaten dengan kesenian dan kuliner Banjar di Stadion HM Sanusi.',
+            'content' => <<<'HTML'
+<p>Kerukunan Bubuhan Banjar (KBB) Kabupaten Pulang Pisau menampilkan kesenian dan budaya Banjar dalam rangkaian Hari Jadi ke-24 Kabupaten Pulang Pisau pada Juli 2026. Kegiatan di Stadion HM Sanusi menampilkan hadrah, madihin, musik panting, dan berbagai wadai Banjar.</p>
+<p>Ketua KBB Pulang Pisau Ahmad Fadli Rahman mengatakan partisipasi tersebut menjadi sarana mengenalkan warisan Banjar dan menjaga kebersamaan masyarakat di daerah. Kehadiran KBB turut menambah keragaman ekspresi budaya dalam perayaan kabupaten.</p>
+HTML,
+            'image_url' => '/article_images/curated-2026-archive/kbb-pulang-pisau-harjad-20260708.jpg',
+            'image_caption' => 'Pementasan seni dan musik Banjar oleh KBB Pulang Pisau pada Hari Jadi ke-24 kabupaten.',
+            'image_credit' => 'Foto: NusaKalimantan',
+            'category_slug' => 'budaya-banjar',
+            'source_name' => 'NusaKalimantan',
+            'source_url' => 'https://nusakalimantan.com/2026/07/08/kbb-tampilkan-kesenian-budaya-banjar-di-hari-jadi-ke-24-kabupaten-pulang-pisau/',
+            'published_at' => '2026-07-08 22:00:00',
+            'tags' => ['KBB Pulang Pisau', 'Seni Banjar', 'Kalimantan Tengah'],
+        ],
+        [
+            'title' => 'Halal Bihalal KBB Sumut di Medan Pererat Hubungan Bubuhan Banjar',
+            'slug' => 'kbb-sumut-halal-bihalal-medan-2026',
+            'excerpt' => 'KBB Sumatera Utara menggelar halal bihalal di Medan untuk mempererat hubungan warga Banjar dari berbagai kabupaten dan kota.',
+            'content' => <<<'HTML'
+<p>Kerukunan Bubuhan Banjar (KBB) Sumatera Utara mengadakan halal bihalal pada 19 April 2026 di Aula BPSDM, Medan. Warga Banjar dari berbagai kabupaten dan kota hadir untuk mempererat silaturahmi setelah Idulfitri.</p>
+<p>Ketua KBB Sumut Hidayatullah mengajak bubuhan Banjar menjaga semangat <em>rakat mufakat babarkat</em>. Pertemuan juga memberi apresiasi kepada warga yang berprestasi dalam kegiatan Al-Qur'an. Kehadiran perwakilan KBB dari wilayah lain menegaskan hubungan antardaerah dalam keluarga besar Banjar.</p>
+HTML,
+            'image_url' => '/article_images/curated-2026-archive/halalbihalal-kbb-sumut-20260419.jpg',
+            'image_caption' => 'Sambutan pada acara halal bihalal KBB Sumatera Utara di Medan.',
+            'image_credit' => 'Foto: Suara Akademis',
+            'category_slug' => 'kegiatan-sosial',
+            'source_name' => 'Suara Akademis',
+            'source_url' => 'https://suaraakademis.com/halal-bihalal-kbb-sumut-bubuhan-banjar-sumut-rakat-mufakat-babarkat/',
+            'published_at' => '2026-04-27 12:00:00',
+            'tags' => ['KBB Sumatera Utara', 'Halal Bihalal', 'Medan'],
+        ],
+        [
+            'title' => 'KBB Kapuas Gelar Haul ke-220 Datu Kalampayan di Masjid Al Mukarram',
+            'slug' => 'kbb-kapuas-haul-datu-kalampayan-ke-220-2026',
+            'excerpt' => 'KBB Kabupaten Kapuas bersama Angkatan Muda Zuriyah memperingati Haul ke-220 Syekh Muhammad Arsyad Al-Banjari di Kuala Kapuas.',
+            'content' => <<<'HTML'
+<p>Kerukunan Bubuhan Banjar (KBB) Kabupaten Kapuas bersama Angkatan Muda Zuriyah menggelar Haul ke-220 Syekh Muhammad Arsyad Al-Banjari atau Datu Kalampayan pada 11 April 2026. Peringatan berlangsung di Masjid Agung Al Mukarram, Kuala Kapuas.</p>
+<p>Jemaah mengikuti pembacaan maulid, zikir, tahlil, dan tausiah. Bupati Kapuas Wiyatno turut hadir. Peringatan ini mempertemukan keluarga besar bubuhan Banjar untuk mengenang keteladanan ulama dan menjaga silaturahmi.</p>
+HTML,
+            'image_url' => '/article_images/curated-2026-archive/haul-datu-kalampayan-kbb-kapuas-20260411.jpg',
+            'image_caption' => 'Jemaah Haul Datu Kalampayan di Masjid Agung Al Mukarram, Kapuas.',
+            'image_credit' => 'Foto: EnterKal',
+            'category_slug' => 'kegiatan-sosial',
+            'source_name' => 'EnterKal',
+            'source_url' => 'https://www.enterkal.com/2026/04/11/haul-ke-220-syekh-muhammad-arsyad-al-banjari-digelar-khidmat-di-kapuas/',
+            'published_at' => '2026-04-11 12:00:00',
+            'tags' => ['KBB Kapuas', 'Datu Kalampayan', 'Haul'],
+        ],
+        [
+            'title' => 'Halal Bihalal dan Pelantikan KBB Jatim Berlangsung di Surabaya',
+            'slug' => 'halal-bihalal-pelantikan-kbb-jatim-surabaya-2026',
+            'excerpt' => 'Bubuhan Banjar di Jawa Timur menggelar halal bihalal di STIESIA Surabaya, disertai pelantikan pengurus dan kegiatan budaya.',
+            'content' => <<<'HTML'
+<p>Kerukunan Bubuhan Banjar (KBB) Jawa Timur menggelar halal bihalal di STIESIA Surabaya pada 5 April 2026. Warga Banjar di perantauan berkumpul untuk mempererat hubungan dan mengikuti rangkaian kegiatan budaya.</p>
+<p>Ketua Umum KBB Sadunia H. Sahbirin Noor menghadiri acara tersebut dan melantik kepengurusan KBB Jawa Timur yang dipimpin H. Noor Alamsyah. Bazar dan kesenian Banjar turut meramaikan kegiatan. Pertemuan ini menjadi ruang bagi warga untuk mempertahankan bahasa, budaya, dan kebersamaan di perantauan.</p>
+HTML,
+            'image_url' => '/article_images/curated-2026-archive/halalbihalal-kbb-jatim-20260405.jpeg',
+            'image_caption' => 'Warga Banjar dan pengurus KBB Jawa Timur dalam acara di Surabaya.',
+            'image_credit' => 'Foto: KBB Jawa Timur (via Wartabanjar)',
+            'category_slug' => 'pelantikan-kbb',
+            'source_name' => 'RRI Banjarmasin',
+            'source_url' => 'https://rri.co.id/banjarmasin/regional/2312435/halal-bihalal-kbb-jatim-pererat-silaturahmi-bubuhan-banjar',
+            'photo_source_url' => 'https://wartabanjar.com/2026/04/05/himung-banar-betamuan-paman-birin-puji-kekompakan-bubuhan-banjar-di-perantauan',
+            'published_at' => '2026-04-06 06:27:00',
+            'tags' => ['KBB Jawa Timur', 'Halal Bihalal', 'Pelantikan', 'Surabaya'],
+        ],
+        [
+            'title' => 'KBB Inhu dan Pemuda Inhil Bagikan Takjil, Bibit Pohon, serta Layanan Kesehatan',
+            'slug' => 'kbb-inhu-pemuda-inhil-takjil-bibit-kesehatan-2026',
+            'excerpt' => 'KBB Indragiri Hulu dan Pemuda Inhil mengadakan aksi sosial di Rengat dengan pembagian 400 takjil, bibit pohon, dan pemeriksaan kesehatan gratis.',
+            'content' => <<<'HTML'
+<p>Kerukunan Bubuhan Banjar (KBB) Indragiri Hulu bersama Pemuda Indragiri Hilir mengadakan kegiatan sosial di Rengat pada 14 Maret 2026. Kegiatan di sekitar Warkop Varia Baru mencakup pembagian <strong>400 paket takjil</strong>, penyerahan bibit pohon, serta pemeriksaan kesehatan tanpa biaya.</p>
+<p>Panitia menyiapkan sekitar 200 bibit sebagai bagian dari ajakan menjaga lingkungan. Kegiatan ini mempertemukan warga dan relawan lintas kelompok selama Ramadan, sekaligus memperluas manfaat pertemuan bubuhan Banjar bagi masyarakat sekitar.</p>
+HTML,
+            'image_url' => '/article_images/curated-2026-archive/aksi-sosial-kbb-inhu-20260314.jpg',
+            'image_caption' => 'Aksi sosial KBB Inhu dan Pemuda Inhil di Rengat pada Ramadan 2026.',
+            'image_credit' => 'Foto: BeritaOne',
+            'category_slug' => 'sosial-dan-kemanusiaan',
+            'source_name' => 'BeritaOne',
+            'source_url' => 'https://beritaone.id/news/detail/14636/pemuda-inhil-dan-kbb-banjar-inhu-berbagi-400-takjil-bibit-pohon-hingga-cek-kesehatan-gratis-di-rengat',
+            'published_at' => '2026-03-14 20:45:00',
+            'tags' => ['KBB Indragiri Hulu', 'Pemuda Inhil', 'Ramadan', 'Aksi Sosial'],
+        ],
+    ];
+
+    $categoryStmt = $db->prepare('SELECT id FROM categories WHERE slug = :slug LIMIT 1');
+    $insertArticle = $db->prepare(
+        'INSERT IGNORE INTO articles
+            (title, slug, excerpt, content, image_url, image_caption, image_credit, video_url,
+             category_id, author_id, status, featured, read_time, source_name, source_url,
+             editor_note, meta_title, meta_description, published_at)
+         SELECT
+            :title, :slug, :excerpt, :content, :image_url, :image_caption, :image_credit, NULL,
+            :category_id, :author_id, \'published\', 0, :read_time, :source_name, :source_url,
+            :editor_note, :meta_title, :meta_description, :published_at
+         WHERE NOT EXISTS (SELECT 1 FROM articles WHERE slug = :check_slug)'
+    );
+    $articleIdStmt = $db->prepare('SELECT id FROM articles WHERE slug = :slug LIMIT 1');
+    $upsertTag = $db->prepare(
+        'INSERT INTO tags (name, slug) VALUES (:name, :slug)
+         ON DUPLICATE KEY UPDATE name = VALUES(name)'
+    );
+    $tagIdStmt = $db->prepare('SELECT id FROM tags WHERE slug = :slug LIMIT 1');
+    $attachTag = $db->prepare('INSERT IGNORE INTO article_tags (article_id, tag_id) VALUES (:article_id, :tag_id)');
+
+    foreach ($articles as $article) {
+        $categoryStmt->execute([':slug' => $article['category_slug']]);
+        $categoryId = (int)$categoryStmt->fetchColumn();
+        if ($categoryId < 1) {
+            throw new RuntimeException('Editorial migration missing category: ' . $article['category_slug']);
+        }
+
+        $sourceLink = htmlspecialchars($article['source_url'], ENT_QUOTES, 'UTF-8');
+        $sourceName = htmlspecialchars($article['source_name'], ENT_QUOTES, 'UTF-8');
+        $content = $article['content'] . '<p><strong>Sumber:</strong> ringkasan redaksi berdasarkan '
+            . '<a href="' . $sourceLink . '" target="_blank" rel="noopener noreferrer">'
+            . $sourceName . '</a>';
+        if (isset($article['photo_source_url'])) {
+            $photoSourceLink = htmlspecialchars($article['photo_source_url'], ENT_QUOTES, 'UTF-8');
+            $content .= '; dokumentasi foto dari <a href="' . $photoSourceLink
+                . '" target="_blank" rel="noopener noreferrer">sumber foto</a>';
+        }
+        $content .= '.</p>';
+
+        $insertArticle->execute([
+            ':title' => $article['title'],
+            ':slug' => $article['slug'],
+            ':excerpt' => $article['excerpt'],
+            ':content' => $content,
+            ':image_url' => $article['image_url'],
+            ':image_caption' => $article['image_caption'],
+            ':image_credit' => $article['image_credit'],
+            ':category_id' => $categoryId,
+            ':author_id' => $authorId,
+            ':read_time' => '2 menit',
+            ':source_name' => $article['source_name'],
+            ':source_url' => $article['source_url'],
+            ':editor_note' => 'Ringkasan orisinal dari sumber tercantum; foto dokumentasi acara sesuai judul.',
+            ':meta_title' => $article['title'],
+            ':meta_description' => $article['excerpt'],
+            ':published_at' => $article['published_at'],
+            ':check_slug' => $article['slug'],
+        ]);
+
+        $articleIdStmt->execute([':slug' => $article['slug']]);
+        $articleId = (int)$articleIdStmt->fetchColumn();
+        if ($articleId < 1) {
+            throw new RuntimeException('Failed to resolve editorial article: ' . $article['slug']);
+        }
+        foreach ($article['tags'] as $tagName) {
+            $tagSlug = strtolower(trim((string)preg_replace('/[^a-z0-9]+/i', '-', $tagName), '-'));
+            $upsertTag->execute([':name' => $tagName, ':slug' => $tagSlug]);
+            $tagIdStmt->execute([':slug' => $tagSlug]);
+            $tagId = (int)$tagIdStmt->fetchColumn();
+            if ($tagId > 0) {
+                $attachTag->execute([':article_id' => $articleId, ':tag_id' => $tagId]);
+            }
         }
     }
 
