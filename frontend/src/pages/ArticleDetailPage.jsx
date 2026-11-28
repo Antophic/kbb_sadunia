@@ -286,6 +286,7 @@ export default function ArticleDetailPage() {
   const opinion = isOpinionArticle(article);
   const brief = buildArticleBrief(article, opinion);
   const topicChips = buildTopicChips(article, opinion);
+  const photoCredit = article.image_credit?.replace(/^Foto:\s*/i, "").trim();
   const normalizedImageUrl = article.image_url ? getImageUrl(article.image_url) : "";
   const structuredImageUrl = normalizedImageUrl
     ? (normalizedImageUrl.startsWith("http") ? normalizedImageUrl : `${window.location.origin}${normalizedImageUrl}`)
@@ -414,7 +415,7 @@ export default function ArticleDetailPage() {
                 </div>
                 <figcaption className="mt-3 text-[11px] font-semibold text-surface-500 border-l-[3px] border-primary-600 pl-3 py-0.5 leading-snug">
                   {article.image_caption || (opinion ? "Ilustrasi foto untuk artikel opini. Keterangan rinci belum dicantumkan redaksi." : "Foto artikel. Keterangan rinci belum dicantumkan redaksi.")}
-                  {article.image_credit ? <span className="block mt-1 text-surface-400">Foto: {article.image_credit}</span> : null}
+                  {photoCredit ? <span className="block mt-1 text-surface-400">Foto: {photoCredit}</span> : null}
                 </figcaption>
               </figure>
             )}
